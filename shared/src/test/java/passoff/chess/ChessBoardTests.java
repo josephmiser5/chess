@@ -17,11 +17,11 @@ public class ChessBoardTests extends EqualsTestingUtility<ChessBoard> {
         super("ChessBoard", "boards");
     }
 
+
     @Test
     @DisplayName("Construct Empty ChessBoard")
     public void constructChessBoard() {
         ChessBoard board = new ChessBoard();
-
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 Assertions.assertNull(
