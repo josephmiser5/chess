@@ -12,7 +12,7 @@ import java.util.Objects;
 public class ChessBoard {
     public static String fenStringStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     private ChessPiece[][] board;
-    BitBoard positions;
+    public BitBoard positions;
     public ChessBoard() {
         board = new ChessPiece[8][8];
         positions = new BitBoard();

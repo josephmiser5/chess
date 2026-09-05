@@ -52,7 +52,11 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(myPosition);
+        int row = myPosition.getRow() - 1;
+        int col = myPosition.getColumn() - 1;
+        int bitPos = col + (8 * row);
+        long bitNum = (long) Math.pow(2, bitPos);
     }
 
     @Override
