@@ -57,9 +57,9 @@ public class ChessPiece {
         int row = myPosition.getRow() - 1;
         int col = myPosition.getColumn() - 1;
         int bitPos = col + (8 * row);
-        long bitNum = 1 << bitPos;
+        long bitNum = 1L << bitPos;
         Collection<ChessMove> allMoves = new ArrayList<>();
-        allMoves = board.positions.movedCollection(bitNum, piece.getPieceType(), piece.pieceColor_, myPosition);
+        allMoves = board.positions_.movedCollection(bitNum, piece.getPieceType(), piece.pieceColor_, myPosition);
         return allMoves;
     }
 
