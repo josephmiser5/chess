@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -56,7 +57,10 @@ public class ChessPiece {
         int row = myPosition.getRow() - 1;
         int col = myPosition.getColumn() - 1;
         int bitPos = col + (8 * row);
-        long bitNum = (long) Math.pow(2, bitPos);
+        long bitNum = 1 << bitPos;
+        Collection<ChessMove> allMoves = new ArrayList<>();
+        allMoves = board.positions.movedCollection(bitNum, piece.getPieceType(), piece.pieceColor_, myPosition);
+        return allMoves;
     }
 
     @Override
