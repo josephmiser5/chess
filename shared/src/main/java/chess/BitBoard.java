@@ -68,9 +68,10 @@ public class BitBoard {
         Collection<ChessMove> allMoves = new ArrayList<>();
         if (type.compareTo(ChessPiece.PieceType.QUEEN) == 0) {
             allMoves = moveQueen(pieceBit, position, color);
-        }
-        for (ChessMove move : allMoves) {
-            System.out.println(move.endPosition_.getRow() + ", " +  move.endPosition_.getColumn());
+        } else if (type.compareTo(ChessPiece.PieceType.ROOK) == 0) {
+            allMoves = moveRook(pieceBit, position, color);
+        } else if (type.compareTo(ChessPiece.PieceType.BISHOP) == 0) {
+            allMoves = moveBishop(pieceBit, position, color);
         }
         return allMoves;
     }
@@ -248,6 +249,86 @@ public class BitBoard {
             }
             allMoves.add(move);
         }
+    }
+
+    public Collection<ChessMove> movePawn(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
+        Collection<ChessMove> allMoves = new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        long teamColor = whiteBoard();
+        long opColor = blackBoard();
+
+        if (color.compareTo(ChessGame.TeamColor.BLACK) == 0) {
+            teamColor = blackBoard();
+            opColor = whiteBoard();
+        }
+
+        long upOne = pieceBit << 8;
+        long upTwo = (pieceBit << 8) | (pieceBit << 16);
+        long takeRightW = pieceBit << 9;
+        long takeLeftW = pieceBit >>> 7;
+
+        if (color.compareTo(ChessGame.TeamColor.WHITE) == 0) {
+            if (row < 8 & ((upOne & teamColor) == 0) & ((upOne & opColor) == 0)) {
+                ChessPosition end = new ChessPosition(row + 1, col);
+                ChessMove move = new ChessMove(position, end, null);
+                allMoves.add(move);
+            }
+            if (row == 2 & ((upTwo & teamColor) == 0) & ((upTwo & opColor) == 0)) {
+                ChessPosition end = new ChessPosition(row + 2, col);
+                ChessMove move = new ChessMove(position, end, null);
+                allMoves.add(move);
+            }
+            if ((row < 8) & (col < 8) & ((takeRightW & opColor) != 0)) {
+                ChessPosition end = new ChessPosition(row + 1, col + 1);
+                ChessMove move = new ChessMove(position, end, null);
+                allMoves.add(move);
+            }
+            if ((row < 8) & (col > 1) & ((takeLeftW & opColor) != 0)) {
+                ChessPosition end = new ChessPosition(row + 1, col - 1);
+                ChessMove move = new ChessMove(position, end, null);
+                allMoves.add(move);
+            }
+        }
+
+        return allMoves;
+    }
+
+    public Collection<ChessMove> moveBishop(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
+        Collection<ChessMove> allMoves = new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        long teamColor = whiteBoard();
+        long opColor = blackBoard();
+
+        if (color.compareTo(ChessGame.TeamColor.BLACK) == 0) {
+            teamColor = blackBoard();
+            opColor = whiteBoard();
+        }
+        movePositiveD(allMoves, teamColor, opColor, pieceBit, row, col, position);
+
+        moveNegativeD(allMoves, teamColor, opColor, pieceBit, row, col, position);
+
+        return allMoves;
+    }
+
+
+    public Collection<ChessMove> moveRook(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
+        Collection<ChessMove> allMoves = new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        long teamColor = whiteBoard();
+        long opColor = blackBoard();
+
+        if (color.compareTo(ChessGame.TeamColor.BLACK) == 0) {
+            teamColor = blackBoard();
+            opColor = whiteBoard();
+        }
+        moveRank(allMoves, teamColor, opColor, pieceBit, row, col, position);
+
+        moveFile(allMoves, teamColor, opColor, pieceBit, row, col, position);
+
+        return allMoves;
     }
 
     public Collection<ChessMove> moveQueen(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
