@@ -60,9 +60,8 @@ public class ChessPieceTests extends EqualsTestingUtility<ChessPiece> {
                     Assertions.assertDoesNotThrow(
                             () -> piece.pieceMoves(board, position),
                             "No pieces anywhere on the board should throw an error. "
-                            + "Tested: " + piece + " at " + position + ".");
+                             + "Tested: " + piece + " at " + position + ".");
                 }
-
                 board.addPiece(position, null);
             }
         }
