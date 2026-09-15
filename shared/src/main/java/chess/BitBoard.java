@@ -271,7 +271,7 @@ public class BitBoard {
     }
 
     private boolean inBounds(int row, int col) {
-        if (row <= 8 & row >= 1 & col <= 8 & col >= 1) {
+        if (row <= 8 && row >= 1 && col <= 8 && col >= 1) {
             return true;
         }
         return false;
@@ -282,11 +282,9 @@ public class BitBoard {
         int row = position.getRow();
         int col = position.getColumn();
         long teamColor = whiteBoard();
-        long opColor = blackBoard();
 
         if (color.compareTo(ChessGame.TeamColor.BLACK) == 0) {
             teamColor = blackBoard();
-            opColor = whiteBoard();
         }
 
         record Entry(long bit, int row, int col) {}
