@@ -162,6 +162,114 @@ public class BitBoard {
         return blackPawns ^ blackRooks ^ blackKnights ^ blackBishops ^ blackQueens ^ blackKing;
     }
 
+    public boolean inCheckWhite() {
+        long king = whiteKing;
+        int index = Long.numberOfTrailingZeros(king);
+        int row = index / 8;
+        int col = Integer.remainderUnsigned(index, 8);
+
+        while (row < 7 & (king & blackBoard()) == 0) {
+            king = king << 8;
+            row++;
+        }
+        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        row = index / 8;
+
+        while (row > 0 & (king & blackBoard()) == 0) {
+            king = king >>> 8;
+            row--;
+        }
+        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        row = index / 8;
+
+        while (col < 7 & (king & blackBoard()) == 0) {
+            king = king << 1;
+            col++;
+        }
+        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        col = Integer.remainderUnsigned(index, 8);
+
+        while (col > 0 & (king & blackBoard()) == 0) {
+            king = king >>> 1;
+            col--;
+        }
+        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        col = Integer.remainderUnsigned(index, 8);
+
+        //----------------------------------------------------
+
+        while (row < 7 & col < 7 & (king & blackBoard()) == 0) {
+            king = king << 9;
+            row++;
+            col++;
+        }
+        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        row = index / 8;
+        col = Integer.remainderUnsigned(index, 8);
+
+        while (row > 0 & col > 0 & (king & blackBoard()) == 0) {
+            king = king >>> 9;
+            row--;
+            col--;
+        }
+        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        row = index / 8;
+        col = Integer.remainderUnsigned(index, 8);
+
+        while (row < 7 & col > 0 & (king & blackBoard()) == 0) {
+            king = king << 7;
+            row++;
+            col--;
+        }
+        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        row = index / 8;
+        col = Integer.remainderUnsigned(index, 8);
+
+        while (row > 0 & col < 7 & (king & blackBoard()) == 0) {
+            king = king >>> 7;
+            row--;
+            col++;
+        }
+        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
+            return true;
+        }
+
+        king = whiteKing;
+        col = Integer.remainderUnsigned(index, 8);
+
+        //-----------------------------------------------------------
+
+        return false;
+    }
+
     private void moveRank(Collection<ChessMove> allMoves, long teamColor, long opColor,
                                           long pieceBit, int row, int col, ChessPosition position) {
 
