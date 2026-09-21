@@ -32,6 +32,40 @@ public class BitBoard {
         blackKing    = 0L;
     }
 
+    public void removeBitPiece(ChessPosition position, ChessPiece piece) {
+        int place = ((position.getRow() - 1) * 8) + position.getColumn() - 1;
+        long bitPiece = 1L << place;
+        if (piece.getTeamColor().compareTo(ChessGame.TeamColor.WHITE) == 0) {
+            if (piece.getPieceType().compareTo(ChessPiece.PieceType.PAWN) == 0) {
+                whitePawns = bitPiece ^  whitePawns;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KING) == 0) {
+                whiteKing = bitPiece ^ whiteKing;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.QUEEN) == 0) {
+                whiteQueens = bitPiece ^  whiteQueens;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.ROOK) == 0) {
+                whiteRooks = bitPiece ^ whiteRooks;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
+                whiteKnights = bitPiece ^ whiteKnights;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.BISHOP) == 0) {
+                whiteBishops = bitPiece ^ whiteBishops;
+            }
+        } else {
+            if (piece.getPieceType().compareTo(ChessPiece.PieceType.PAWN) == 0) {
+                blackPawns = bitPiece ^ blackPawns;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KING) == 0) {
+                blackKing = bitPiece ^ blackKing;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.QUEEN) == 0) {
+                blackQueens = bitPiece ^ blackQueens;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.ROOK) == 0) {
+                blackRooks = bitPiece ^ blackRooks;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
+                blackKnights = bitPiece ^ blackKnights;
+            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.BISHOP) == 0) {
+                blackBishops = bitPiece ^ blackBishops;
+            }
+        }
+    }
+
     public void addBitPiece(ChessPiece piece, long bitPiece) {
         if (piece == null) {
             return;
