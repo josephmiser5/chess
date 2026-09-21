@@ -162,110 +162,55 @@ public class BitBoard {
         return blackPawns ^ blackRooks ^ blackKnights ^ blackBishops ^ blackQueens ^ blackKing;
     }
 
-    public boolean inCheckWhite() {
-        long king = whiteKing;
-        int index = Long.numberOfTrailingZeros(king);
+    long crossGen(int row, int col) {
+        long rank = 0x00000000000000FFL;
+        long file = 0x0101010101010101L;
+        rank = rank << row * 8;
+        file = file << col;
+        return rank | file;
+    }
+
+    long crossFill(int[] king, int[] other) {
+        long between = 0L;
+        if (other[0] == king[0]) {
+            if (other[1] > king[1]) {
+                between = ((1L << other[1]) - (1L << king[1])) & ~(1L << king[1]);
+            } else {
+                between = ((1L << king[1]) - (1L << other[1])) & ~(1L << other[1]);
+            }
+        } else {
+            if (other[0] > king[0]) {
+                long fill = ((1L << (other[0] * 8)) - (1L << (king[0] * 8))) & ~(1L << (king[0] * 8));
+                long file = 0x0101010101010101L;
+                between = fill & file;
+            } else {
+                long fill = ((1L << (king[0] * 8)) - (1L << (other[0] * 8))) & ~(1L << (other[0] * 8));
+                long file = 0x0101010101010101L;
+                between = fill & file;
+            }
+        }
+        return between;
+    }
+
+    int[] posGen(long pieceBoard) {
+        int index = Long.numberOfTrailingZeros(pieceBoard);
         int row = index / 8;
         int col = Integer.remainderUnsigned(index, 8);
+        return new int[] {row, col};
+    }
 
-        while (row < 7 & (king & blackBoard()) == 0) {
-            king = king << 8;
-            row++;
+    public boolean inCheckWhite() {
+        int[] kingPos = posGen(whiteKing);
+        int row = kingPos[0];
+        int col = kingPos[1];
+        long cross = crossGen(row, col);
+
+        long queens = cross & whiteQueens;
+
+        if (queens != 0) {
+            int[] queenPos = posGen(queens);
+
         }
-        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        row = index / 8;
-
-        while (row > 0 & (king & blackBoard()) == 0) {
-            king = king >>> 8;
-            row--;
-        }
-        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        row = index / 8;
-
-        while (col < 7 & (king & blackBoard()) == 0) {
-            king = king << 1;
-            col++;
-        }
-        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        col = Integer.remainderUnsigned(index, 8);
-
-        while (col > 0 & (king & blackBoard()) == 0) {
-            king = king >>> 1;
-            col--;
-        }
-        if ((king & blackQueens) != 0 | (king & blackRooks) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        col = Integer.remainderUnsigned(index, 8);
-
-        //----------------------------------------------------
-
-        while (row < 7 & col < 7 & (king & blackBoard()) == 0) {
-            king = king << 9;
-            row++;
-            col++;
-        }
-        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        row = index / 8;
-        col = Integer.remainderUnsigned(index, 8);
-
-        while (row > 0 & col > 0 & (king & blackBoard()) == 0) {
-            king = king >>> 9;
-            row--;
-            col--;
-        }
-        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        row = index / 8;
-        col = Integer.remainderUnsigned(index, 8);
-
-        while (row < 7 & col > 0 & (king & blackBoard()) == 0) {
-            king = king << 7;
-            row++;
-            col--;
-        }
-        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        row = index / 8;
-        col = Integer.remainderUnsigned(index, 8);
-
-        while (row > 0 & col < 7 & (king & blackBoard()) == 0) {
-            king = king >>> 7;
-            row--;
-            col++;
-        }
-        if ((king & blackQueens) != 0 | (king & blackBishops) != 0) {
-            return true;
-        }
-
-        king = whiteKing;
-        col = Integer.remainderUnsigned(index, 8);
-
-        //-----------------------------------------------------------
 
         return false;
     }
