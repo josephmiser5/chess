@@ -67,6 +67,38 @@ public class BitBoard {
         }
     }
 
+    public ChessPiece getBitPiece(ChessPosition position) {
+        int place = ((position.getRow() - 1) * 8) + position.getColumn() - 1;
+        long bitPosition = 1L << place;
+        ChessPiece piece = null;
+        if ((bitPosition & whitePawns) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        } else if ((bitPosition & whiteKnights) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
+        } else if ((bitPosition & whiteKing) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
+        } else if ((bitPosition & whiteRooks) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
+        } else if ((bitPosition & whiteBishops) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
+        } else if ((bitPosition & whiteQueens) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN);
+        } else if ((bitPosition & blackPawns) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+        } else if ((bitPosition & blackKnights) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
+        } else if ((bitPosition & blackKing) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
+        } else if ((bitPosition & blackRooks) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
+        } else if ((bitPosition & blackBishops) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
+        } else if ((bitPosition & blackQueens) != 0) {
+            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
+        }
+        return piece;
+    }
+
     public Collection<ChessMove> movedCollection(long pieceBit, ChessPiece.PieceType type, ChessGame.TeamColor color, ChessPosition position) {
         Collection<ChessMove> allMoves = new ArrayList<>();
         if (type.compareTo(ChessPiece.PieceType.QUEEN) == 0) {
@@ -485,4 +517,31 @@ public class BitBoard {
 
         return allMoves;
         }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        BitBoard bitBoard = (BitBoard) o;
+        return whitePawns == bitBoard.whitePawns && whiteKing == bitBoard.whiteKing && whiteQueens == bitBoard.whiteQueens && whiteRooks == bitBoard.whiteRooks && whiteKnights == bitBoard.whiteKnights && whiteBishops == bitBoard.whiteBishops && blackPawns == bitBoard.blackPawns && blackKing == bitBoard.blackKing && blackQueens == bitBoard.blackQueens && blackRooks == bitBoard.blackRooks && blackKnights == bitBoard.blackKnights && blackBishops == bitBoard.blackBishops;
     }
+
+    @Override
+    public int hashCode() {
+        int result = Long.hashCode(whitePawns);
+        result = 31 * result + Long.hashCode(whiteKing);
+        result = 31 * result + Long.hashCode(whiteQueens);
+        result = 31 * result + Long.hashCode(whiteRooks);
+        result = 31 * result + Long.hashCode(whiteKnights);
+        result = 31 * result + Long.hashCode(whiteBishops);
+        result = 31 * result + Long.hashCode(blackPawns);
+        result = 31 * result + Long.hashCode(blackKing);
+        result = 31 * result + Long.hashCode(blackQueens);
+        result = 31 * result + Long.hashCode(blackRooks);
+        result = 31 * result + Long.hashCode(blackKnights);
+        result = 31 * result + Long.hashCode(blackBishops);
+        return result;
+    }
+}

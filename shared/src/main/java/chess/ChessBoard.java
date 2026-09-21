@@ -1,6 +1,6 @@
 package chess;
 
-import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -10,11 +10,11 @@ import java.util.Arrays;
  */
 public class ChessBoard {
     public static String fenStringStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    public ChessPiece[][] board_;
-    public BitBoard positions_;
+    //public ChessPiece[][] board_;
+    public BitBoard _board;
     public ChessBoard() {
-        board_ = new ChessPiece[8][8];
-        positions_ = new BitBoard();
+        //board_ = new ChessPiece[8][8];
+        _board = new BitBoard();
     }
 
     /**
@@ -26,9 +26,9 @@ public class ChessBoard {
     public void addPiece(ChessPosition position, ChessPiece piece) {
         int row = position.getRow();
         int col = position.getColumn();
-        board_[row - 1][col - 1] = piece;
+        //board_[row - 1][col - 1] = piece;
         long bitPiece = 1L << col - 1 + (8 * (row - 1));
-        positions_.addBitPiece(piece, bitPiece);
+        _board.addBitPiece(piece, bitPiece);
     }
 
     public ChessPiece typeFromFen(char letter) {
@@ -64,46 +64,47 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return board_[position.getRow() - 1][position.getColumn() - 1];
+        return _board.getBitPiece(position);
     }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        positions_ = new BitBoard();
-        positions_.whitePawns   = 0x000000000000FF00L;
-        positions_.whiteRooks   = 0x0000000000000081L;
-        positions_.whiteKnights = 0x0000000000000042L;
-        positions_.whiteBishops = 0x0000000000000024L;
-        positions_.whiteQueens  = 0x0000000000000008L;
-        positions_.whiteKing    = 0x0000000000000010L;
-        positions_.blackPawns   = 0x00FF000000000000L;
-        positions_.blackRooks   = 0x8100000000000000L;
-        positions_.blackKnights = 0x4200000000000000L;
-        positions_.blackBishops = 0x2400000000000000L;
-        positions_.blackQueens  = 0x0800000000000000L;
-        positions_.blackKing    = 0x1000000000000000L;
+        _board = new BitBoard();
+        _board.whitePawns   = 0x000000000000FF00L;
+        _board.whiteRooks   = 0x0000000000000081L;
+        _board.whiteKnights = 0x0000000000000042L;
+        _board.whiteBishops = 0x0000000000000024L;
+        _board.whiteQueens  = 0x0000000000000008L;
+        _board.whiteKing    = 0x0000000000000010L;
+        _board.blackPawns   = 0x00FF000000000000L;
+        _board.blackRooks   = 0x8100000000000000L;
+        _board.blackKnights = 0x4200000000000000L;
+        _board.blackBishops = 0x2400000000000000L;
+        _board.blackQueens  = 0x0800000000000000L;
+        _board.blackKing    = 0x1000000000000000L;
 
-        board_ = new ChessPiece[8][8];
-        int rank = 7;
-        int file = 0;
-        int i = 0;
-        while (fenStringStart.charAt(i) != ' ') {
-            char square = fenStringStart.charAt(i);
-            if (square == '/' ) {
-                file = 0;
-                rank--;
-                i++;
-                continue;
-            } else if (Character.isDigit(square)) {
-                file += Character.getNumericValue(square);
-            } else {
-                board_[rank][file] = typeFromFen(square);
-            }
-            file++;
-            i++;
-        }
+        //board_ = new ChessPiece[8][8];
+        //int rank = 7;
+        //int file = 0;
+        //int i = 0;
+        //while (fenStringStart.charAt(i) != ' ') {
+        //    char square = fenStringStart.charAt(i);
+        //    if (square == '/' ) {
+        //        file = 0;
+        //        rank--;
+        //        i++;
+        //        continue;
+        //    } else if (Character.isDigit(square)) {
+        //        file += Character.getNumericValue(square);
+        //    } else {
+        //        board_[rank][file] = typeFromFen(square);
+        //    }
+        //    file++;
+        //    i++;
+        //}
     }
 
     @Override
@@ -113,12 +114,34 @@ public class ChessBoard {
         }
 
         ChessBoard that = (ChessBoard) o;
-        return Arrays.deepEquals(board_, that.board_);
+        return Objects.equals(_board, that._board);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.deepHashCode(board_);
+        return Objects.hashCode(_board);
     }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "positions_=" + _board +
+                '}';
+    }
+
+    //@Override
+    //public boolean equals(Object o) {
+    //    if (o == null || getClass() != o.getClass()) {
+    //        return false;
+    //    }
+
+    //    ChessBoard that = (ChessBoard) o;
+    //    return Arrays.deepEquals(board_, that.board_);
+    //}
+
+    //@Override
+    //public int hashCode() {
+    //    return Arrays.deepHashCode(board_);
+    //}
 }
 
