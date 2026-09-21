@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class ChessBoard {
     public static String fenStringStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    private ChessPiece[][] board_;
+    public ChessPiece[][] board_;
     public BitBoard positions_;
     public ChessBoard() {
         board_ = new ChessPiece[8][8];
