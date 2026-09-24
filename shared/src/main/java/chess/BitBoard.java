@@ -168,6 +168,27 @@ public class BitBoard {
         return file;
     }
 
+    long diagonalGen(boolean dir, int[] pos) {
+        int up = pos[0] - pos[1];
+        int down = pos[0] - (7 - pos[1]);
+        if (dir) {
+            long positive = 0x8040201008040201L;
+            if (up < 0) {
+                positive = positive >>> 8 * (Math.abs(up));
+            } else {
+                positive = positive << 8 * up;
+            }
+            return positive;
+        } else {
+            long negative = 0x0102040810204080L;
+            if (down < 0) {
+                negative = negative >>> 8 * (Math.abs(down));
+            } else {
+                negative = negative << 8 * down;
+            }
+            return negative;
+        }
+    }
 
     int[] posGen(long pieceBoard) {
         int index = Long.numberOfTrailingZeros(pieceBoard);
@@ -176,7 +197,7 @@ public class BitBoard {
         return new int[] {row, col};
     }
 
-    boolean rookQueenFill(ChessGame.TeamColor color, int[] other) {
+    boolean linearDiagonalFill(ChessGame.TeamColor color, int[] other, boolean isBishopQueen) {
         int[] king;
         if (color == ChessGame.TeamColor.WHITE) {
             king = posGen(blackKing);
@@ -187,18 +208,24 @@ public class BitBoard {
         int kingCol = king[1];
         int row = other[0];
         int col = other[1];
-        long fileMask = fileGen(col);
         int team = kingRow * 8 + kingCol;
+        long fileMask = fileGen(col);
         int piece = row * 8 + col;
 
-       int lo = Math.min(team, piece); int hi = Math.max(team, piece);
-       long between = ((1L << hi) - (1L << lo)) - (1L << lo);
-       if (kingCol == col) {between = between & fileMask;}
+        int lo = Math.min(team, piece); int hi = Math.max(team, piece);
+        long between = ((1L << hi) - (1L << lo)) - (1L << lo);
 
-        if ((between & (whiteBoard() | blackBoard())) != 0) {
-            return false;
+        if (isBishopQueen) {
+            if (row - king[0] == col - king[1]) {
+                between = between & diagonalGen(true, other);
+            } else {
+                between = between & diagonalGen(false, other);
+            }
+        } else {
+            if (kingCol == col) {between = between & fileMask;}
         }
-        return true;
+
+        return (between & (whiteBoard() | blackBoard())) == 0;
     }
 
 
@@ -210,8 +237,14 @@ public class BitBoard {
                 ChessPiece.PieceType type = piece.getPieceType();
                 boolean isRookOrQueen = type == ChessPiece.PieceType.QUEEN || type == ChessPiece.PieceType.ROOK;
                 boolean onLine = king[0] == i || king[1] == y;
+                boolean isBishopOrQueen = type == ChessPiece.PieceType.QUEEN || type == ChessPiece.PieceType.BISHOP;
+                boolean onDiagonal = Math.abs(i - king[0]) == Math.abs(y - king[1]);
                 if (isRookOrQueen && onLine) {
-                    if (rookQueenFill(color, new int[] {i, y})) {
+                    if (linearDiagonalFill(color, new int[] {i, y}, false)) {
+                        return true;
+                    }
+                } else if (isBishopOrQueen && onDiagonal) {
+                    if (linearDiagonalFill(color, new int[] {i, y}, true)) {
                         return true;
                     }
                 }
