@@ -76,8 +76,9 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         if (teamColor == TeamColor.WHITE) {
             return _currentBoard._board.inCheckWhite();
+        } else {
+            return  _currentBoard._board.inCheckBlack();
         }
-        return false;
     }
 
     /**

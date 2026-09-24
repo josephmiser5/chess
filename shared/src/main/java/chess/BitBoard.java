@@ -168,12 +168,20 @@ public class BitBoard {
         return file;
     }
 
+
+    int[] posGen(long pieceBoard) {
+        int index = Long.numberOfTrailingZeros(pieceBoard);
+        int row = index / 8;
+        int col = Integer.remainderUnsigned(index, 8);
+        return new int[] {row, col};
+    }
+
     boolean rookQueenFill(ChessGame.TeamColor color, int[] other) {
         int[] king;
         if (color == ChessGame.TeamColor.WHITE) {
-            king = posGen(whiteKing);
-        } else {
             king = posGen(blackKing);
+        } else {
+            king = posGen(whiteKing);
         }
         int kingRow = king[0];
         int kingCol = king[1];
@@ -193,34 +201,33 @@ public class BitBoard {
         return true;
     }
 
-    int[] posGen(long pieceBoard) {
-        int index = Long.numberOfTrailingZeros(pieceBoard);
-        int row = index / 8;
-        int col = Integer.remainderUnsigned(index, 8);
-        return new int[] {row, col};
-    }
 
-    boolean crossFill(int[] king) {
-        long bitPiece = 1L;
+    boolean crossFill(int[] king, ChessGame.TeamColor color) {
         for (int i = 0; i < 8; i++) {
             for (int y = 0; y < 8; y ++) {
-                int[] pos = posGen(bitPiece);
                 ChessPiece piece = getBitPiece(new ChessPosition(i + 1, y + 1));
-                if (king[0] == pos[0] | king[1] == pos[1]) {
-                    if (rookQueenFill(piece.getTeamColor(), pos)) {
+                if (piece == null || piece.getTeamColor() != color) {continue;}
+                ChessPiece.PieceType type = piece.getPieceType();
+                boolean isRookOrQueen = type == ChessPiece.PieceType.QUEEN || type == ChessPiece.PieceType.ROOK;
+                boolean onLine = king[0] == i || king[1] == y;
+                if (isRookOrQueen && onLine) {
+                    if (rookQueenFill(color, new int[] {i, y})) {
                         return true;
                     }
                 }
-                bitPiece = bitPiece << 1;
             }
         }
+        return false;
     }
 
     public boolean inCheckWhite() {
         int[] kingPos = posGen(whiteKing);
-        int row = kingPos[0];
-        int col = kingPos[1];
-        return crossFill(kingPos);
+        return crossFill(kingPos, ChessGame.TeamColor.BLACK);
+    }
+
+    public boolean inCheckBlack() {
+        int[] kingPos = posGen(blackKing);
+        return crossFill(kingPos, ChessGame.TeamColor.WHITE);
     }
 
     private void moveRank(Collection<ChessMove> allMoves, long teamColor, long opColor,
