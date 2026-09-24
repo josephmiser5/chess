@@ -162,34 +162,35 @@ public class BitBoard {
         return blackPawns ^ blackRooks ^ blackKnights ^ blackBishops ^ blackQueens ^ blackKing;
     }
 
-    long crossGen(int row, int col) {
-        long rank = 0x00000000000000FFL;
+    long fileGen(int col) {
         long file = 0x0101010101010101L;
-        rank = rank << row * 8;
         file = file << col;
-        return rank | file;
+        return file;
     }
 
-    long crossFill(int[] king, int[] other) {
-        long between = 0L;
-        if (other[0] == king[0]) {
-            if (other[1] > king[1]) {
-                between = ((1L << other[1]) - (1L << king[1])) & ~(1L << king[1]);
-            } else {
-                between = ((1L << king[1]) - (1L << other[1])) & ~(1L << other[1]);
-            }
+    boolean rookQueenFill(ChessGame.TeamColor color, int[] other) {
+        int[] king;
+        if (color == ChessGame.TeamColor.WHITE) {
+            king = posGen(whiteKing);
         } else {
-            if (other[0] > king[0]) {
-                long fill = ((1L << (other[0] * 8)) - (1L << (king[0] * 8))) & ~(1L << (king[0] * 8));
-                long file = 0x0101010101010101L;
-                between = fill & file;
-            } else {
-                long fill = ((1L << (king[0] * 8)) - (1L << (other[0] * 8))) & ~(1L << (other[0] * 8));
-                long file = 0x0101010101010101L;
-                between = fill & file;
-            }
+            king = posGen(blackKing);
         }
-        return between;
+        int kingRow = king[0];
+        int kingCol = king[1];
+        int row = other[0];
+        int col = other[1];
+        long fileMask = fileGen(col);
+        int team = kingRow * 8 + kingCol;
+        int piece = row * 8 + col;
+
+       int lo = Math.min(team, piece); int hi = Math.max(team, piece);
+       long between = ((1L << hi) - (1L << lo)) - (1L << lo);
+       if (kingCol == col) {between = between & fileMask;}
+
+        if ((between & (whiteBoard() | blackBoard())) != 0) {
+            return false;
+        }
+        return true;
     }
 
     int[] posGen(long pieceBoard) {
@@ -199,20 +200,27 @@ public class BitBoard {
         return new int[] {row, col};
     }
 
+    boolean crossFill(int[] king) {
+        long bitPiece = 1L;
+        for (int i = 0; i < 8; i++) {
+            for (int y = 0; y < 8; y ++) {
+                int[] pos = posGen(bitPiece);
+                ChessPiece piece = getBitPiece(new ChessPosition(i + 1, y + 1));
+                if (king[0] == pos[0] | king[1] == pos[1]) {
+                    if (rookQueenFill(piece.getTeamColor(), pos)) {
+                        return true;
+                    }
+                }
+                bitPiece = bitPiece << 1;
+            }
+        }
+    }
+
     public boolean inCheckWhite() {
         int[] kingPos = posGen(whiteKing);
         int row = kingPos[0];
         int col = kingPos[1];
-        long cross = crossGen(row, col);
-
-        long queens = cross & whiteQueens;
-
-        if (queens != 0) {
-            int[] queenPos = posGen(queens);
-
-        }
-
-        return false;
+        return crossFill(kingPos);
     }
 
     private void moveRank(Collection<ChessMove> allMoves, long teamColor, long opColor,
