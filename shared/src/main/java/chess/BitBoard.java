@@ -197,6 +197,47 @@ public class BitBoard {
         return new int[] {row, col};
     }
 
+    boolean otherCheck(ChessGame.TeamColor color, int[] other, boolean knight, boolean pawn, boolean enKing) {
+        int[] king;
+        if (color == ChessGame.TeamColor.WHITE) {
+            king = posGen(blackKing);
+        } else {
+            king = posGen(whiteKing);
+        }
+        int kingRow = king[0];
+        int kingCol = king[1];
+        int row = other[0];
+        int col = other[1];
+        int team = kingRow * 8 + kingCol;
+
+        int[] kingMoves = {(row + 1) * 8 + (col - 1), (row + 1) * 8 + (col), (row + 1) * 8 + (col + 1),
+                (row) * 8 + (col - 1), (row) * 8 + (col + 1),
+                (row - 1) * 8 + (col - 1), (row - 1) * 8 + (col), (row - 1) * 8 + (col + 1)};
+
+        int[] pawnMoves = {(row + 1) * 8 + (col - 1), (row + 1) * 8 + (col + 1)};
+
+        int[] knightMoves = {(row + 2) * 8 + (col - 1), (row + 2) * 8 + (col + 1), (row + 1) * 8 + (col - 2),
+                (row + 1) * 8 + (col + 2), (row - 1) * 8 + (col - 2), (row - 1) * 8 + (col + 2),
+                (row - 2) * 8 + (col - 1), (row - 2) * 8 + (col + 1)};
+
+       int[] moves;
+
+        if (knight) {
+            moves = knightMoves;
+        } else if (enKing) {
+            moves = kingMoves;
+        } else {
+            moves = pawnMoves;
+        }
+
+        for (int i : moves) {
+            if (team == i) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     boolean linearDiagonalFill(ChessGame.TeamColor color, int[] other, boolean isBishopQueen) {
         int[] king;
         if (color == ChessGame.TeamColor.WHITE) {
@@ -238,6 +279,9 @@ public class BitBoard {
                 boolean isRookOrQueen = type == ChessPiece.PieceType.QUEEN || type == ChessPiece.PieceType.ROOK;
                 boolean onLine = king[0] == i || king[1] == y;
                 boolean isBishopOrQueen = type == ChessPiece.PieceType.QUEEN || type == ChessPiece.PieceType.BISHOP;
+                boolean isKnight = type == ChessPiece.PieceType.KNIGHT;
+                boolean isPawn = type == ChessPiece.PieceType.PAWN;
+                boolean isKing = type == ChessPiece.PieceType.KING;
                 boolean onDiagonal = Math.abs(i - king[0]) == Math.abs(y - king[1]);
                 if (isRookOrQueen && onLine) {
                     if (linearDiagonalFill(color, new int[] {i, y}, false)) {
@@ -245,6 +289,18 @@ public class BitBoard {
                     }
                 } else if (isBishopOrQueen && onDiagonal) {
                     if (linearDiagonalFill(color, new int[] {i, y}, true)) {
+                        return true;
+                    }
+                } else if (isKnight) {
+                    if (otherCheck(color, new int[] {i, y}, true, false, false)) {
+                        return true;
+                    }
+                } else if (isPawn) {
+                    if (otherCheck(color, new int[] {i, y}, false, true, false)) {
+                        return true;
+                    }
+                } else if (isKing) {
+                    if (otherCheck(color, new int[] {i, y}, false, false, true)) {
                         return true;
                     }
                 }
