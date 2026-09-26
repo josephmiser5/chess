@@ -16,6 +16,9 @@ public class ChessBoard {
         //board_ = new ChessPiece[8][8];
         _board = new BitBoard();
     }
+    public ChessBoard(BitBoard other) {
+        _board = other;
+    }
 
     /**
      * Adds a chess piece to the chessboard

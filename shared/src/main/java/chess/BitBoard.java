@@ -2,7 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 public class BitBoard {
     long whitePawns;
     long whiteKing;
@@ -16,6 +15,8 @@ public class BitBoard {
     long blackRooks;
     long blackKnights;
     long blackBishops;
+    private static final int[][] KNIGHT = {{2,-1},{2,1},{1,-2},{1,2},{-1,-2},{-1,2},{-2,-1},{-2,1}};
+    private static final int[][] KING   = {{1,-1},{1,0},{1,1},{0,-1},{0,1},{-1,-1},{-1,0},{-1,1}};
 
     public BitBoard() {
         whitePawns   = 0L;
@@ -30,6 +31,20 @@ public class BitBoard {
         blackBishops = 0L;
         blackQueens  = 0L;
         blackKing    = 0L;
+    }
+    public BitBoard(BitBoard other) {
+        this.whiteKing = other.whiteKing;
+        this.blackKing = other.blackKing;
+        this.whiteQueens = other.whiteQueens;
+        this.blackQueens = other.blackQueens;
+        this.whiteRooks = other.whiteRooks;
+        this.blackRooks = other.blackRooks;
+        this.whiteBishops = other.whiteBishops;
+        this.blackBishops = other.blackBishops;
+        this.whiteKnights = other.whiteKnights;
+        this.blackKnights = other.blackKnights;
+        this.whitePawns = other.whitePawns;
+        this.blackPawns = other.blackPawns;
     }
 
     public void removeBitPiece(ChessPosition position, ChessPiece piece) {
@@ -197,45 +212,17 @@ public class BitBoard {
         return new int[] {row, col};
     }
 
-    boolean otherCheck(ChessGame.TeamColor color, int[] other, boolean knight, boolean pawn, boolean enKing) {
-        int[] king;
-        if (color == ChessGame.TeamColor.WHITE) {
-            king = posGen(blackKing);
-        } else {
-            king = posGen(whiteKing);
-        }
-        int kingRow = king[0];
-        int kingCol = king[1];
-        int row = other[0];
-        int col = other[1];
-        int team = kingRow * 8 + kingCol;
 
-        int[] kingMoves = {(row + 1) * 8 + (col - 1), (row + 1) * 8 + (col), (row + 1) * 8 + (col + 1),
-                (row) * 8 + (col - 1), (row) * 8 + (col + 1),
-                (row - 1) * 8 + (col - 1), (row - 1) * 8 + (col), (row - 1) * 8 + (col + 1)};
-
-        int[] pawnMoves = {(row + 1) * 8 + (col - 1), (row + 1) * 8 + (col + 1)};
-
-        int[] knightMoves = {(row + 2) * 8 + (col - 1), (row + 2) * 8 + (col + 1), (row + 1) * 8 + (col - 2),
-                (row + 1) * 8 + (col + 2), (row - 1) * 8 + (col - 2), (row - 1) * 8 + (col + 2),
-                (row - 2) * 8 + (col - 1), (row - 2) * 8 + (col + 1)};
-
-       int[] moves;
-
-        if (knight) {
-            moves = knightMoves;
-        } else if (enKing) {
-            moves = kingMoves;
-        } else {
-            moves = pawnMoves;
-        }
-
-        for (int i : moves) {
-            if (team == i) {
-                return true;
-            }
+    boolean attacks(int[] piece, int[] king, int[][] offsets) {
+        for (int[] i : offsets) {
+            if (king[0] == piece[0] + i[0] && king[1] == piece[1] + i[1] ) return true;
         }
         return false;
+    }
+
+    boolean pawnAttacks(int[] piece, int[] king, ChessGame.TeamColor color) {
+        int dir = (color == ChessGame.TeamColor.WHITE) ? 1 : -1;
+        return (king[0] == piece[0] + dir && Math.abs(piece[1] - king[1]) == 1);
     }
 
     boolean linearDiagonalFill(ChessGame.TeamColor color, int[] other, boolean isBishopQueen) {
@@ -292,15 +279,15 @@ public class BitBoard {
                         return true;
                     }
                 } else if (isKnight) {
-                    if (otherCheck(color, new int[] {i, y}, true, false, false)) {
+                    if (attacks(new int[] {i, y}, king, KNIGHT)) {
                         return true;
                     }
                 } else if (isPawn) {
-                    if (otherCheck(color, new int[] {i, y}, false, true, false)) {
+                    if (pawnAttacks(new int[]{i, y}, king, color)) {
                         return true;
                     }
                 } else if (isKing) {
-                    if (otherCheck(color, new int[] {i, y}, false, false, true)) {
+                    if (attacks(new int[] {i, y}, king, KING)) {
                         return true;
                     }
                 }
@@ -310,14 +297,17 @@ public class BitBoard {
     }
 
     public boolean inCheckWhite() {
+        if (whiteKing == 0) return false;
         int[] kingPos = posGen(whiteKing);
         return crossFill(kingPos, ChessGame.TeamColor.BLACK);
     }
 
     public boolean inCheckBlack() {
+        if (blackKing == 0) return false;
         int[] kingPos = posGen(blackKing);
         return crossFill(kingPos, ChessGame.TeamColor.WHITE);
     }
+
 
     private void moveRank(Collection<ChessMove> allMoves, long teamColor, long opColor,
                                           long pieceBit, int row, int col, ChessPosition position) {
