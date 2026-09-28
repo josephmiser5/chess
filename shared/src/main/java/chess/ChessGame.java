@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Vector;
 
 /**
  * A class that can manage a chess game, making moves on a board
@@ -52,7 +53,18 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = _currentBoard.getPiece(startPosition);
+        Vector<ChessMove> allMoves = new Vector<ChessMove>();
+        if (piece == null) return new Vector<>();
+        Collection<ChessMove> moves = piece.pieceMoves(_currentBoard, startPosition);
+        for (ChessMove i : moves) {
+            ChessBoard tempBoard = new ChessBoard(new BitBoard(_currentBoard._board));
+            applyMove(tempBoard, i);
+            if (!tempBoard._board.isInCheck(piece.getTeamColor())) {
+                allMoves.add(i);
+            }
+        }
+        return allMoves;
     }
 
     /**
@@ -62,7 +74,24 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        applyMove(_currentBoard, move);
+        boolean isOk = false;
+        Collection<ChessMove> validMoves = validMoves(move.startPosition_);
+        for (ChessMove i : validMoves) {
+            if (i.endPosition_.equals(move.endPosition_)) {
+                isOk = true;
+                break;
+            }
+        }
+        if (!isOk) {
+             throw new chess.InvalidMoveException();
+         }
+         applyMove(_currentBoard, move);
+
+        if (_turn == TeamColor.WHITE) {
+            _turn = TeamColor.BLACK;
+        } else {
+            _turn = TeamColor.WHITE;
+        }
     }
 
     public void applyMove(ChessBoard board, ChessMove move) {
@@ -87,7 +116,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return inCheck(teamColor, _currentBoard);
+        return _currentBoard._board.isInCheck(teamColor);
     }
 
     boolean inCheck(TeamColor teamColor, ChessBoard board) {
@@ -126,7 +155,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) return false;
+        if (!_currentBoard._board.isInCheck(teamColor)) return false;
         return inCheckNext(teamColor);
     }
 
@@ -139,7 +168,7 @@ public class ChessGame {
                 for (ChessMove move : chessMoves) {
                     ChessBoard tempBoard = new ChessBoard(new BitBoard(_currentBoard._board));
                     applyMove(tempBoard, move);
-                    if (!inCheck(teamColor, tempBoard)) return false;
+                    if (!tempBoard._board.isInCheck(teamColor)) return false;
                 }
             }
         }

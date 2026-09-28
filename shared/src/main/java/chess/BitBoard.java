@@ -308,6 +308,11 @@ public class BitBoard {
         return crossFill(kingPos, ChessGame.TeamColor.WHITE);
     }
 
+    public boolean isInCheck(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) return inCheckWhite();
+        else return inCheckBlack();
+    }
+
 
     private void moveRank(Collection<ChessMove> allMoves, long teamColor, long opColor,
                                           long pieceBit, int row, int col, ChessPosition position) {
