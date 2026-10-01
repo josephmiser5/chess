@@ -30,11 +30,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        if (_turn == TeamColor.WHITE) {
-            _turn = TeamColor.BLACK;
-        } else {
-            _turn = TeamColor.WHITE;
-        }
+        _turn = team;
     }
 
     /**
@@ -85,13 +81,11 @@ public class ChessGame {
         if (!isOk) {
              throw new chess.InvalidMoveException();
          }
-         applyMove(_currentBoard, move);
-
-        if (_turn == TeamColor.WHITE) {
-            _turn = TeamColor.BLACK;
-        } else {
-            _turn = TeamColor.WHITE;
+        if (!_currentBoard.getPiece(move.startPosition_).getTeamColor().equals(_turn)) {
+            throw new chess.InvalidMoveException();
         }
+        applyMove(_currentBoard, move);
+        _turn = (_turn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     public void applyMove(ChessBoard board, ChessMove move) {
