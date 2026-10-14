@@ -113,34 +113,6 @@ public class ChessGame {
         return _currentBoard._board.isInCheck(teamColor);
     }
 
-    boolean inCheck(TeamColor teamColor, ChessBoard board) {
-        int[] kingPos;
-        long kingBoard;
-        if (teamColor == TeamColor.WHITE) {
-            kingBoard = board._board.whiteKing;
-        } else {
-            kingBoard = board._board.blackKing;
-        }
-
-        if (kingBoard != 0) {
-            kingPos = board._board.posGen(kingBoard);
-        } else {
-            return false;
-        }
-        for (int i = 1; i <= 8; i++) {
-            for (int y = 1; y <= 8; y++) {
-                ChessPiece piece = board._board.getBitPiece(new ChessPosition(i, y));
-                if (piece == null || piece.getTeamColor() == teamColor) continue;
-                Collection<ChessMove> chessMoves = piece.pieceMoves(board, new ChessPosition(i, y));
-                for (ChessMove move : chessMoves) {
-                    if (move.endPosition_.getRow() == kingPos[0] + 1 && move.endPosition_.getColumn()
-                            == kingPos[1] + 1) return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     /**
      * Determines if the given team is in checkmate
