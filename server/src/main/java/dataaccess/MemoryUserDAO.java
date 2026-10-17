@@ -17,11 +17,11 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) {
         if (users.containsKey(username)) {
             return users.get(username);
         }
-        throw new DataAccessException("Failed to get user");
+        return null;
     }
 
     @Override
