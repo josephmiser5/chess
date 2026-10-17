@@ -35,6 +35,24 @@ public class Server {
             ctx.result(gson.toJson(res));
         });
 
+        javalin.post("/session", _ -> {
+        });
+
+        javalin.delete("/session", _ -> {
+        });
+
+        javalin.get("/game", _ -> {
+        });
+
+        javalin.post("/game", _ -> {
+        });
+
+        javalin.put("/game", _ -> {
+        });
+
+        javalin.delete("/db", _ -> {
+        });
+
         javalin.exception(BadRequestException.class, (e, ctx) -> {
             ctx.status(400);
             ctx.result(gson.toJson(Map.of("message", e.getMessage())));
