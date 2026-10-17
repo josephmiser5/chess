@@ -8,8 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import request.RegisterRequest;
 import result.RegisterResult;
-
-import java.util.ArrayList;
+import service.exception.AlreadyTakenException;
+import service.exception.BadRequestException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,12 +33,10 @@ public class UserServiceTest {
     @Test
     @DisplayName("Register succeeds")
     public void registerTestPositive() throws DataAccessException {
-
         RegisterRequest req = new RegisterRequest(usernames[0], passwords[0], emails[0]);
         RegisterResult res = userService.register(req);
         UserData userData = userDAO.getUser(usernames[0]);
         AuthData authData = authDAO.getAuth(res.authToken());
-
 
         RegisterRequest req1 = new RegisterRequest(usernames[1], passwords[1], emails[1]);
         RegisterResult res1 = userService.register(req1);
@@ -54,5 +52,32 @@ public class UserServiceTest {
         assertEquals(emails[0], userData.email());
 
         assertNotEquals(res1.authToken(), res.authToken());
+    }
+
+    @Test
+    @DisplayName("Register fails with missing password")
+    public void registerNullField() throws DataAccessException {
+
+        RegisterRequest req = new RegisterRequest(usernames[0], null, emails[0]);
+        assertThrowsExactly(BadRequestException.class, () -> {
+            userService.register(req);
+        });
+        assertNull(userDAO.getUser(usernames[0]));
+    }
+
+    @Test
+    @DisplayName("Register fails when username is taken")
+    public void registerDuplicateUsername() throws DataAccessException {
+        userService.register(new RegisterRequest(usernames[0], passwords[0], emails[0]));
+
+        RegisterRequest duplicate = new RegisterRequest(usernames[0], passwords[1], emails[1]);
+        assertThrowsExactly(AlreadyTakenException.class, () -> {
+            userService.register(duplicate);
+        });
+
+        UserData stored = userDAO.getUser(usernames[0]);
+        assertNotNull(stored);
+        assertEquals(passwords[0], stored.password());
+        assertEquals(emails[0], stored.email());
     }
 }
