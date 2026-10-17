@@ -13,6 +13,7 @@ public class MemoryAuthDAO implements AuthDAO {
             throw new DataAccessException("unauthorized");
         }
         AuthData authData = new AuthData(authToken, username);
+        auth.put(authToken, authData);
     }
 
     @Override
