@@ -80,4 +80,20 @@ public class UserServiceTest {
         assertEquals(passwords[0], stored.password());
         assertEquals(emails[0], stored.email());
     }
+
+    @Test
+    @DisplayName("DOAs handle registration")
+    public void dataAccess() throws DataAccessException {
+
+        RegisterRequest req = new RegisterRequest(usernames[0], passwords[0], emails[0]);
+        RegisterResult res = userService.register(req);
+
+        assertThrowsExactly(DataAccessException.class, () -> {
+            userDAO.createUser(usernames[0], passwords[0], emails[0]);
+        });
+
+        assertThrowsExactly(DataAccessException.class, () -> {
+            authDAO.createAuth(res.authToken(), usernames[0]);
+        });
+    }
 }

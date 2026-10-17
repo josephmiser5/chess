@@ -5,7 +5,9 @@ import dataaccess.*;
 import io.javalin.*;
 
 import io.javalin.http.Context;
+import request.LoginRequest;
 import request.RegisterRequest;
+import result.LoginResult;
 import result.RegisterResult;
 import service.UserService;
 import service.exception.AlreadyTakenException;
@@ -35,7 +37,11 @@ public class Server {
             ctx.result(gson.toJson(res));
         });
 
-        javalin.post("/session", _ -> {
+        javalin.post("/session", ctx -> {
+            LoginRequest req = gson.fromJson(ctx.body(), LoginRequest.class);
+            LoginResult res = userService.login(req);
+            ctx.status(200);
+            ctx.result(gson.toJson(res));
         });
 
         javalin.delete("/session", _ -> {

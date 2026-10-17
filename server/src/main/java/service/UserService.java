@@ -4,10 +4,14 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.UserData;
+import request.LoginRequest;
 import request.RegisterRequest;
+import result.LoginResult;
 import result.RegisterResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
+import service.exception.UnauthorizedException;
+
 import java.util.UUID;
 
 public class UserService {
@@ -28,6 +32,16 @@ public class UserService {
             return new RegisterResult(req.username(), authToken);
         }
         throw new AlreadyTakenException("Error: already taken");
+    }
+
+    public LoginResult login(LoginRequest req) throws DataAccessException {
+        if (req.username() == null || req.password() == null) throw new BadRequestException("Error, bad request");
+        UserData userData = userDAO.getUser(req.username());
+        if (userData == null) throw new UnauthorizedException("Error: unauthorized");
+        if (!req.password().equals(userData.password())) throw new UnauthorizedException("Error: unauthorized");
+        String authToken = generateToken();
+        authDAO.createAuth(authToken, req.username());
+        return new LoginResult(req.username(), authToken);
     }
 
     private static String generateToken() {
