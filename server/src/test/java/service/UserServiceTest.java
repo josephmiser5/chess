@@ -6,10 +6,13 @@ import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import request.LoginRequest;
 import request.RegisterRequest;
+import result.LoginResult;
 import result.RegisterResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
+import service.exception.UnauthorizedException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,7 +85,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("DOAs handle registration")
+    @DisplayName("DAOs handle registration")
     public void dataAccess() throws DataAccessException {
 
         RegisterRequest req = new RegisterRequest(usernames[0], passwords[0], emails[0]);
@@ -94,6 +97,39 @@ public class UserServiceTest {
 
         assertThrowsExactly(DataAccessException.class, () -> {
             authDAO.createAuth(res.authToken(), usernames[0]);
+        });
+    }
+
+
+    @Test
+    @DisplayName("Login succeeds")
+    public void loginPositive() throws DataAccessException {
+        RegisterRequest req = new RegisterRequest(usernames[1], passwords[1], emails[1]);
+        RegisterResult res = userService.register(req);
+
+        LoginRequest loginReq = new LoginRequest(usernames[1], passwords[1]);
+        LoginResult loginRes = userService.login(loginReq);
+        AuthData authData = authDAO.getAuth(loginRes.authToken());
+
+        assertNotNull(loginRes);
+        assertEquals(loginRes.authToken(), authData.authToken());
+        assertEquals(usernames[1], authData.username());
+
+    }
+
+    @Test
+    @DisplayName("Login fails")
+    public void loginNegative() throws DataAccessException {
+
+        assertThrowsExactly(BadRequestException.class, () -> {
+            userService.login(new LoginRequest(null, passwords[0]));
+        });
+
+        RegisterRequest req = new RegisterRequest(usernames[1], passwords[1], emails[1]);
+        userService.register(req);
+
+        assertThrowsExactly(UnauthorizedException.class, () -> {
+            userService.login(new LoginRequest(usernames[1], passwords[0]));
         });
     }
 }

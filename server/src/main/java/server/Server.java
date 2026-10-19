@@ -6,8 +6,10 @@ import io.javalin.*;
 
 import io.javalin.http.Context;
 import request.LoginRequest;
+import request.LogoutRequest;
 import request.RegisterRequest;
 import result.LoginResult;
+import result.LogoutResult;
 import result.RegisterResult;
 import service.UserService;
 import service.exception.AlreadyTakenException;
@@ -44,7 +46,10 @@ public class Server {
             ctx.result(gson.toJson(res));
         });
 
-        javalin.delete("/session", _ -> {
+        javalin.delete("/session", ctx -> {
+            LogoutRequest req = new LogoutRequest(ctx.header("authorization"));
+            LogoutResult res = userService.logout(req);
+            ctx.status(200);
         });
 
         javalin.get("/game", _ -> {

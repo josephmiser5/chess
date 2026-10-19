@@ -3,10 +3,13 @@ package service;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
+import model.AuthData;
 import model.UserData;
 import request.LoginRequest;
+import request.LogoutRequest;
 import request.RegisterRequest;
 import result.LoginResult;
+import result.LogoutResult;
 import result.RegisterResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
@@ -42,6 +45,13 @@ public class UserService {
         String authToken = generateToken();
         authDAO.createAuth(authToken, req.username());
         return new LoginResult(req.username(), authToken);
+    }
+
+    public LogoutResult logout(LogoutRequest req) throws DataAccessException {
+        if (req.authorization() == null) throw new BadRequestException("Error: bad request");
+        AuthData authData = authDAO.getAuth(req.authorization());
+        if (authData == null)
+        return null;
     }
 
     private static String generateToken() {
