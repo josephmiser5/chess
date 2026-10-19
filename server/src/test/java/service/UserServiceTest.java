@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import request.LoginRequest;
+import request.LogoutRequest;
 import request.RegisterRequest;
 import result.LoginResult;
 import result.RegisterResult;
@@ -21,6 +22,7 @@ public class UserServiceTest {
     private final String[] usernames = {"johnsmith", "janedoe"};
     private final String[] passwords = {"password", "12345"};
     private final String[] emails = {"johnsmith@email.com", "janedoe@email.com"};
+    private final String[] authTokens = {"adslkfj_dksjf_sidfoju", "slakfj_fanvx455"};
     private UserDAO userDAO;
     private AuthDAO authDAO;
     private UserService userService;
@@ -131,5 +133,26 @@ public class UserServiceTest {
         assertThrowsExactly(UnauthorizedException.class, () -> {
             userService.login(new LoginRequest(usernames[1], passwords[0]));
         });
+    }
+
+    @Test
+    @DisplayName("Logout succeeds")
+    public void logoutPositive() throws DataAccessException {
+        RegisterRequest req = new RegisterRequest(usernames[1], passwords[1], emails[1]);
+        RegisterResult res = userService.register(req);
+
+        assertNotNull(authDAO.getAuth(res.authToken()));
+        LogoutRequest logoutRequest = new LogoutRequest(res.authToken());
+        userService.logout(logoutRequest);
+
+        assertNull(authDAO.getAuth(res.authToken()));
+    }
+
+    @Test
+    @DisplayName("Logout fails")
+    public void logoutNegative() {
+       assertThrowsExactly(UnauthorizedException.class, () -> {
+           userService.logout(new LogoutRequest(authTokens[0]));
+       });
     }
 }

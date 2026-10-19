@@ -48,10 +48,11 @@ public class UserService {
     }
 
     public LogoutResult logout(LogoutRequest req) throws DataAccessException {
-        if (req.authorization() == null) throw new BadRequestException("Error: bad request");
-        AuthData authData = authDAO.getAuth(req.authorization());
-        if (authData == null)
-        return null;
+        if (req.authToken() == null) throw new BadRequestException("Error: bad request");
+        AuthData authData = authDAO.getAuth(req.authToken());
+        if (authData == null) throw new UnauthorizedException("Error: unauthorized");
+        authDAO.deleteAuth(authData.authToken());
+        return new LogoutResult();
     }
 
     private static String generateToken() {
