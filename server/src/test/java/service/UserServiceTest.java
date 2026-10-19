@@ -155,4 +155,5 @@ public class UserServiceTest {
            userService.logout(new LogoutRequest(authTokens[0]));
        });
     }
+
 }
