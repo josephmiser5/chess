@@ -65,8 +65,9 @@ public class Server {
             String authToken = ctx.header("authorization");
             CreateGameRequest body = gson.fromJson(ctx.body(), CreateGameRequest.class);
             CreateGameRequest req = new CreateGameRequest(authToken, body.gameName());
-
             CreateGameResult res = gameService.createGame(req);
+            ctx.status(200);
+            ctx.result(gson.toJson(res));
         });
 
         javalin.put("/game", _ -> {
