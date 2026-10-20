@@ -71,6 +71,7 @@ public class Server {
         });
 
         javalin.put("/game", _ -> {
+            
         });
 
         javalin.delete("/db", ctx -> {
