@@ -5,20 +5,17 @@ import dataaccess.*;
 import io.javalin.*;
 
 import io.javalin.http.Context;
-import request.CreateGameRequest;
-import request.LoginRequest;
-import request.LogoutRequest;
-import request.RegisterRequest;
-import result.CreateGameResult;
-import result.LoginResult;
-import result.LogoutResult;
-import result.RegisterResult;
+import io.javalin.json.JsonMapper;
+import org.jetbrains.annotations.NotNull;
+import request.*;
+import result.*;
 import service.GameService;
 import service.UserService;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class Server {
@@ -26,6 +23,8 @@ public class Server {
     private final Javalin javalin;
 
     public Server() {
+
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         // Register your endpoints and exception handlers here.
 
@@ -36,6 +35,7 @@ public class Server {
         GameService gameService = new GameService(userDAO, authDAO, gameDAO);
 
         Gson gson = new Gson();
+
 
         javalin.post("/user", ctx -> {
             RegisterRequest req = gson.fromJson(ctx.body(), RegisterRequest.class);
@@ -58,7 +58,11 @@ public class Server {
             ctx.result(gson.toJson(res));
         });
 
-        javalin.get("/game", _ -> {
+        javalin.get("/game", ctx -> {
+            ListGamesRequest req = new ListGamesRequest(ctx.header("authorization"));
+            ListGamesResult res = gameService.listGames(req);
+            ctx.status(200);
+            ctx.json(gson.toJson(res));
         });
 
         javalin.post("/game", ctx -> {
@@ -70,8 +74,7 @@ public class Server {
             ctx.result(gson.toJson(res));
         });
 
-        javalin.put("/game", _ -> {
-            
+        javalin.put("/game", ctx -> {
         });
 
         javalin.delete("/db", ctx -> {

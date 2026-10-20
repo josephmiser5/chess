@@ -26,7 +26,7 @@ public class UserService {
     }
     public RegisterResult register(RegisterRequest req) throws DataAccessException,
             BadRequestException, AlreadyTakenException {
-        if (req.username() == null || req.password() == null || req.email() == null) throw new BadRequestException("Error: bad request");
+        if (req.username() == null || req.password() == null || req.email() == null) throw new BadRequestException();
         UserData userData = userDAO.getUser(req.username());
         if (userData == null) {
             userDAO.createUser(req.username(), req.password(), req.email());
@@ -34,23 +34,23 @@ public class UserService {
             authDAO.createAuth(authToken, req.username());
             return new RegisterResult(req.username(), authToken);
         }
-        throw new AlreadyTakenException("Error: already taken");
+        throw new AlreadyTakenException();
     }
 
     public LoginResult login(LoginRequest req) throws DataAccessException {
-        if (req.username() == null || req.password() == null) throw new BadRequestException("Error, bad request");
+        if (req.username() == null || req.password() == null) throw new BadRequestException();
         UserData userData = userDAO.getUser(req.username());
-        if (userData == null) throw new UnauthorizedException("Error: unauthorized");
-        if (!req.password().equals(userData.password())) throw new UnauthorizedException("Error: unauthorized");
+        if (userData == null) throw new UnauthorizedException();
+        if (!req.password().equals(userData.password())) throw new UnauthorizedException();
         String authToken = generateToken();
         authDAO.createAuth(authToken, req.username());
         return new LoginResult(req.username(), authToken);
     }
 
     public LogoutResult logout(LogoutRequest req) throws DataAccessException {
-        if (req.authToken() == null) throw new BadRequestException("Error: bad request");
+        if (req.authToken() == null) throw new BadRequestException();
         AuthData authData = authDAO.getAuth(req.authToken());
-        if (authData == null) throw new UnauthorizedException("Error: unauthorized");
+        if (authData == null) throw new UnauthorizedException();
         authDAO.deleteAuth(authData.authToken());
         return new LogoutResult();
     }
