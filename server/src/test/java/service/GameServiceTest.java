@@ -1,18 +1,13 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.*;
-import model.AuthData;
 import model.GameData;
-import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import request.CreateGameRequest;
-import request.LoginRequest;
-import request.LogoutRequest;
-import request.RegisterRequest;
+import request.*;
 import result.CreateGameResult;
-import result.LoginResult;
 import result.RegisterResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
@@ -22,13 +17,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 public class GameServiceTest {
-    private final String[] usernames = {"johnsmith", "janedoe"};
+    private final String[] usernames = {"john smith", "Jane doe"};
     private final String[] passwords = {"password", "12345"};
     private final String[] emails = {"johnsmith@email.com", "janedoe@email.com"};
     private final String[] gameNames = {"fun game"};
-    private final String[] authTokens = {"asldkfjlkf23jl"};
-    private UserDAO userDAO;
-    private AuthDAO authDAO;
+    private final String[] authTokens = {"Asldkfjf23jl"};
     private GameDAO gameDAO;
     private GameService gameService;
     private UserService userService;
@@ -36,8 +29,8 @@ public class GameServiceTest {
 
     @BeforeEach
     public void setUp() {
-        userDAO = new MemoryUserDAO();
-        authDAO = new MemoryAuthDAO();
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
         gameDAO = new MemoryGameDAO();
         gameService = new GameService(userDAO, authDAO, gameDAO);
         userService = new UserService(userDAO, authDAO);
@@ -68,6 +61,32 @@ public class GameServiceTest {
         });
         assertThrowsExactly(UnauthorizedException.class, () -> {
             gameService.createGame(new CreateGameRequest(authTokens[0], gameNames[0]));
+        });
+    }
+
+    @Test
+    @DisplayName("joinGame succeeds")
+    public void joinGamePositive() throws DataAccessException {
+        RegisterResult user = registerUser();
+        CreateGameResult createResult = gameService.createGame(new CreateGameRequest(user.authToken(), "super fun"));
+        gameService.joinGame(new JoinGameRequest(user.authToken(), ChessGame.TeamColor.WHITE, createResult.gameID()));
+        GameData gameData = gameDAO.getGame(createResult.gameID());
+        assertNotNull(gameData);
+        assertEquals(user.username(), gameData.whiteUsername());
+    }
+
+    @Test
+    @DisplayName("joinGame fails")
+    public void joinGameNegative() throws DataAccessException {
+        RegisterResult user = registerUser();
+        CreateGameResult createResult = gameService.createGame(new CreateGameRequest(user.authToken(), "super fun"));
+        JoinGameRequest joinRequest = new JoinGameRequest(user.authToken(), ChessGame.TeamColor.BLACK, createResult.gameID());
+        assertThrowsExactly(UnauthorizedException.class, () -> {
+            gameService.joinGame(new JoinGameRequest(authTokens[0], ChessGame.TeamColor.BLACK, createResult.gameID()));
+        });
+        gameService.joinGame(joinRequest);
+        assertThrowsExactly(AlreadyTakenException.class, () -> {
+            gameService.joinGame(joinRequest);
         });
     }
 }

@@ -75,6 +75,13 @@ public class Server {
         });
 
         javalin.put("/game", ctx -> {
+            String authToken = ctx.header("authorization");
+            JoinGameRequest body = gson.fromJson(ctx.body(), JoinGameRequest.class);
+            JoinGameRequest req = new JoinGameRequest(authToken, body.playerColor(), body.gameID());
+            System.out.println(req.playerColor());
+            gameService.joinGame(req);
+            ctx.status(200);
+            ctx.result("{}");
         });
 
         javalin.delete("/db", ctx -> {
