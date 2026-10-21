@@ -78,6 +78,8 @@ public class GameService {
             gameDAO.updateGame(newGameData);
         } else if (req.playerColor().equals(ChessGame.TeamColor.BLACK)) {
             throw new AlreadyTakenException();
-        } else throw new BadRequestException();
+        } else {
+            throw new BadRequestException();
+        }
     }
 }

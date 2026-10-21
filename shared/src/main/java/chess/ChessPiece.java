@@ -10,12 +10,12 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessPiece {
-    private final ChessGame.TeamColor pieceColor_;
-    private final PieceType type_;
+    private final ChessGame.TeamColor pieceColor;
+    private final PieceType type;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        pieceColor_ = pieceColor;
-        type_ = type;
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     /**
@@ -34,14 +34,14 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return pieceColor_;
+        return pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        return type_;
+        return type;
     }
 
     /**
@@ -58,15 +58,15 @@ public class ChessPiece {
         int bitPos = col + (8 * row);
         long bitNum = 1L << bitPos;
         Collection<ChessMove> allMoves;
-        allMoves = board._board.movedCollection(bitNum, piece.getPieceType(), piece.pieceColor_, myPosition);
+        allMoves = board.board.movedCollection(bitNum, piece.getPieceType(), piece.pieceColor, myPosition);
         return allMoves;
     }
 
     @Override
     public String toString() {
         return "ChessPiece{" +
-                "pieceColor_=" + pieceColor_ +
-                ", type_=" + type_ +
+                "pieceColor_=" + pieceColor +
+                ", type_=" + type +
                 '}';
     }
 
@@ -77,13 +77,13 @@ public class ChessPiece {
         }
 
         ChessPiece that = (ChessPiece) o;
-        return pieceColor_ == that.pieceColor_ && type_ == that.type_;
+        return pieceColor == that.pieceColor && type == that.type;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hashCode(pieceColor_);
-        result = 31 * result + Objects.hashCode(type_);
+        int result = Objects.hashCode(pieceColor);
+        result = 31 * result + Objects.hashCode(type);
         return result;
     }
 }

@@ -9,29 +9,29 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessMove {
-    ChessPosition startPosition_;
-    ChessPosition endPosition_;
-    ChessPiece.PieceType promotionPiece_;
+    ChessPosition startPosition;
+    ChessPosition endPosition;
+    ChessPiece.PieceType promotionPiece;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
-        startPosition_ = startPosition;
-        endPosition_ = endPosition;
-        promotionPiece_ = promotionPiece;
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPiece = promotionPiece;
     }
 
     /**
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-        return startPosition_;
+        return startPosition;
     }
 
     /**
      * @return ChessPosition of ending location
      */
     public ChessPosition getEndPosition() {
-        return endPosition_;
+        return endPosition;
     }
 
     /**
@@ -41,7 +41,7 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        return promotionPiece_;
+        return promotionPiece;
     }
 
     @Override
@@ -51,16 +51,16 @@ public class ChessMove {
         }
 
         ChessMove move = (ChessMove) o;
-        return Objects.equals(startPosition_, move.startPosition_) &&
-                Objects.equals(endPosition_, move.endPosition_) &&
-                promotionPiece_ == move.promotionPiece_;
+        return Objects.equals(startPosition, move.startPosition) &&
+                Objects.equals(endPosition, move.endPosition) &&
+                promotionPiece == move.promotionPiece;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hashCode(startPosition_);
-        result = 31 * result + Objects.hashCode(endPosition_);
-        result = 31 * result + Objects.hashCode(promotionPiece_);
+        int result = Objects.hashCode(startPosition);
+        result = 31 * result + Objects.hashCode(endPosition);
+        result = 31 * result + Objects.hashCode(promotionPiece);
         return result;
     }
 }

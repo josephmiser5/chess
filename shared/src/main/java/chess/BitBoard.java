@@ -164,7 +164,7 @@ public class BitBoard {
             allMoves = moveKing(pieceBit, position, color);
         }
         for (ChessMove i : allMoves) {
-            System.out.println(i.endPosition_.getRow() + ", " + i.endPosition_.getColumn());
+            System.out.println(i.endPosition.getRow() + ", " + i.endPosition.getColumn());
         }
         return allMoves;
     }

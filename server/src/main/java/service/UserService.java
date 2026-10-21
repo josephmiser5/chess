@@ -44,8 +44,9 @@ public class UserService {
             throw new BadRequestException();
         }
         UserData userData = userDAO.getUser(req.username());
-        if (userData == null) throw new UnauthorizedException();
-        if (!req.password().equals(userData.password())) {
+        if (userData == null) {
+            throw new UnauthorizedException();
+        } if (!req.password().equals(userData.password())) {
             throw new UnauthorizedException();
         }
         String authToken = generateToken();
