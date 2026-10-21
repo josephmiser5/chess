@@ -336,6 +336,16 @@ public class BitBoard {
         return false;
     }
 
+    private void steps(Collection<ChessMove> allMoves, ChessPosition start, int[][] offsets, long team) {
+        for (int[] i : offsets) {
+            int row = start.getRow() + i[0];
+            int col = start.getColumn() + i[1];
+            if (inBounds(row, col) & ((toBit(row, col) & team) == 0)) {
+                allMoves.add(new ChessMove(start, new ChessPosition(row, col), null));
+            }
+        }
+    }
+
     private Collection<ChessMove> moveKing(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
         int row = position.getRow();
@@ -346,20 +356,7 @@ public class BitBoard {
             teamColor = blackBoard();
         }
 
-        record Entry(long bit, int row, int col) {}
-
-        Entry[] kingBits = {new Entry(pieceBit << 8, 1, 0), new Entry(pieceBit << 9, 1, 1),
-                new Entry(pieceBit << 7, 1, -1), new Entry(pieceBit >>> 1, 0, -1),
-                new Entry(pieceBit << 1, 0, 1), new Entry(pieceBit >>> 8, -1, 0),
-                new Entry(pieceBit >>> 9, -1, -1), new Entry(pieceBit >>> 7, -1, 1), };
-
-        for (Entry i : kingBits) {
-            if (inBounds(row + i.row, col + i.col) & ((i.bit & teamColor) == 0)) {
-                ChessPosition end = new ChessPosition(row + i.row, col + i.col);
-                ChessMove move = new ChessMove(position, end, null);
-                allMoves.add(move);
-            }
-        }
+        steps(allMoves, position, KING, teamColor);
 
         return allMoves;
     }
@@ -374,19 +371,7 @@ public class BitBoard {
             teamColor = blackBoard();
         }
 
-        record Entry(long bit, int row, int col) {}
-
-        Entry[] knightBits = {new Entry(pieceBit << 17, 2, 1), new Entry(pieceBit << 15, 2, -1), new Entry(pieceBit << 10, 1, 2),
-                new Entry(pieceBit << 6, 1, -2), new Entry(pieceBit >>> 17, -2, -1), new Entry(pieceBit >>> 15, -2, 1),
-                new Entry(pieceBit >>> 10, -1, -2), new Entry(pieceBit >>> 6, -1, 2), };
-
-        for (Entry i : knightBits) {
-            if (inBounds(row + i.row, col + i.col) & ((i.bit & teamColor) == 0)) {
-                ChessPosition end = new ChessPosition(row + i.row, col + i.col);
-                ChessMove move = new ChessMove(position, end, null);
-                allMoves.add(move);
-            }
-        }
+        steps(allMoves, position, KNIGHT, teamColor);
 
         return allMoves;
     }
@@ -525,8 +510,6 @@ public class BitBoard {
 
     private Collection<ChessMove> moveRook(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-        int row = position.getRow();
-        int col = position.getColumn();
         long teamColor = whiteBoard();
         long opColor = blackBoard();
 
