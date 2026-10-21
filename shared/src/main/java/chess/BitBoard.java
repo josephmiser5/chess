@@ -17,6 +17,8 @@ public class BitBoard {
     long blackBishops;
     private static final int[][] KNIGHT = {{2,-1},{2,1},{1,-2},{1,2},{-1,-2},{-1,2},{-2,-1},{-2,1}};
     private static final int[][] KING   = {{1,-1},{1,0},{1,1},{0,-1},{0,1},{-1,-1},{-1,0},{-1,1}};
+    private static final int[][] ROOK_DIRS = {{1,0},{-1,0},{0,1},{0,-1}};
+    private static final int[][] BISHOP_DIRS = {{1,1},{-1,-1},{1,-1},{-1,1}};
 
     public BitBoard() {
         whitePawns   = 0L;
@@ -320,174 +322,6 @@ public class BitBoard {
         }
     }
 
-
-    private void moveRank(Collection<ChessMove> allMoves, long teamColor, long opColor,
-                                          long pieceBit, int row, int col, ChessPosition position) {
-
-        long moveBit = pieceBit;
-        while (row < 8) {
-            row++;
-            moveBit = moveBit << 8;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove  move = new ChessMove(position, end, null);
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-
-        row = position.getRow();
-        moveBit = pieceBit;
-
-        while (row > 1) {
-            row--;
-            moveBit = moveBit >>> 8;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-    }
-
-
-    private void moveFile(Collection<ChessMove> allMoves, long teamColor, long opColor,
-                                              long pieceBit, int row, int col, ChessPosition position) {
-        long moveBit = pieceBit;
-        while (col < 8) {
-            col++;
-            moveBit = moveBit << 1;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-
-
-        col = position.getColumn();
-        moveBit = pieceBit;
-
-        while (col > 1) {
-            col--;
-            moveBit = moveBit >>> 1;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-    }
-
-
-    private void movePositiveD(Collection<ChessMove> allMoves, long teamColor, long opColor,
-                         long pieceBit, int row, int col, ChessPosition position) {
-        long moveBit = pieceBit;
-        while (col < 8 & row < 8) {
-            row++;
-            col++;
-            moveBit = moveBit << 9;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-
-        row = position.getRow();
-        col = position.getColumn();
-        moveBit = pieceBit;
-
-        while (col > 1 & row > 1) {
-            row--;
-            col--;
-            moveBit = moveBit >>> 9;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-    }
-
-    public void moveNegativeD(Collection<ChessMove> allMoves, long teamColor, long opColor,
-                              long pieceBit, int row, int col, ChessPosition position) {
-        long moveBit = pieceBit;
-
-        while (col > 1 & row < 8) {
-            row++;
-            col--;
-            moveBit = moveBit << 7;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-
-
-        row = position.getRow();
-        col = position.getColumn();
-        moveBit = pieceBit;
-
-        while (col < 8 & row > 1) {
-            row--;
-            col++;
-            moveBit = moveBit >>> 7;
-            ChessPosition end = new ChessPosition(row, col);
-            ChessMove move = new ChessMove(position, end, null);
-
-            if ((moveBit & teamColor) != 0) {
-                break;
-            }
-            if ((moveBit & opColor) != 0) {
-                allMoves.add(move);
-                break;
-            }
-            allMoves.add(move);
-        }
-    }
-
     private void promotionType(Collection<ChessMove> allMoves, ChessPosition start, ChessPosition end) {
         allMoves.add(new ChessMove(start, end, ChessPiece.PieceType.QUEEN));
         allMoves.add(new ChessMove(start, end, ChessPiece.PieceType.KNIGHT));
@@ -651,10 +485,32 @@ public class BitBoard {
         return allMoves;
     }
 
+    private void slide(Collection<ChessMove> allMoves, ChessPosition start, int[][] dirs, long team, long enemy) {
+        for (int[] d : dirs) {
+            int row = start.getRow() + d[0];
+            int col = start.getColumn() + d[1];
+            while (inBounds(row, col)) {
+                long bit = toBit(row, col);
+                if ((bit & team) != 0) {
+                    break;
+                }
+                allMoves.add(new ChessMove(start, new ChessPosition(row, col), null));
+                if ((bit & enemy) != 0) {
+                    break;
+                }
+                row += d[0];
+                col += d[1];
+            }
+        }
+    }
+
+    private long toBit(int row, int col) {
+        return 1L << ((row - 1) * 8 + (col - 1));
+    }
+
+
     private Collection<ChessMove> moveBishop(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-        int row = position.getRow();
-        int col = position.getColumn();
         long teamColor = whiteBoard();
         long opColor = blackBoard();
 
@@ -662,10 +518,7 @@ public class BitBoard {
             teamColor = blackBoard();
             opColor = whiteBoard();
         }
-        movePositiveD(allMoves, teamColor, opColor, pieceBit, row, col, position);
-
-        moveNegativeD(allMoves, teamColor, opColor, pieceBit, row, col, position);
-
+        slide(allMoves, position, BISHOP_DIRS, teamColor, opColor);
         return allMoves;
     }
 
@@ -681,17 +534,14 @@ public class BitBoard {
             teamColor = blackBoard();
             opColor = whiteBoard();
         }
-        moveRank(allMoves, teamColor, opColor, pieceBit, row, col, position);
 
-        moveFile(allMoves, teamColor, opColor, pieceBit, row, col, position);
+        slide(allMoves, position, ROOK_DIRS, teamColor, opColor);
 
         return allMoves;
     }
 
     private Collection<ChessMove> moveQueen(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-        int row = position.getRow();
-        int col = position.getColumn();
         long teamColor = whiteBoard();
         long opColor = blackBoard();
 
@@ -700,13 +550,8 @@ public class BitBoard {
             opColor = whiteBoard();
         }
 
-        moveRank(allMoves, teamColor, opColor, pieceBit, row, col, position);
-
-        moveFile(allMoves, teamColor, opColor, pieceBit, row, col, position);
-
-        movePositiveD(allMoves, teamColor, opColor, pieceBit, row, col, position);
-
-        moveNegativeD(allMoves, teamColor, opColor, pieceBit, row, col, position);
+        slide(allMoves, position, ROOK_DIRS, teamColor, opColor);
+        slide(allMoves, position, BISHOP_DIRS, teamColor, opColor);
 
         return allMoves;
         }
