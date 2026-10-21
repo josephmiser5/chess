@@ -163,9 +163,6 @@ public class BitBoard {
         } else if (type.compareTo(ChessPiece.PieceType.KING) == 0) {
             allMoves = moveKing(pieceBit, position, color);
         }
-        for (ChessMove i : allMoves) {
-            System.out.println(i.endPosition.getRow() + ", " + i.endPosition.getColumn());
-        }
         return allMoves;
     }
 
