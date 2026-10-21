@@ -49,105 +49,55 @@ public class BitBoard {
         this.blackPawns = other.blackPawns;
     }
 
-    public void removeBitPiece(ChessPosition position, ChessPiece piece) {
-        int place = ((position.getRow() - 1) * 8) + position.getColumn() - 1;
-        long bitPiece = 1L << place;
-        if (piece.getTeamColor().compareTo(ChessGame.TeamColor.WHITE) == 0) {
-            if (piece.getPieceType().compareTo(ChessPiece.PieceType.PAWN) == 0) {
-                whitePawns = bitPiece ^  whitePawns;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KING) == 0) {
-                whiteKing = bitPiece ^ whiteKing;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.QUEEN) == 0) {
-                whiteQueens = bitPiece ^  whiteQueens;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.ROOK) == 0) {
-                whiteRooks = bitPiece ^ whiteRooks;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
-                whiteKnights = bitPiece ^ whiteKnights;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.BISHOP) == 0) {
-                whiteBishops = bitPiece ^ whiteBishops;
-            }
-        } else {
-            if (piece.getPieceType().compareTo(ChessPiece.PieceType.PAWN) == 0) {
-                blackPawns = bitPiece ^ blackPawns;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KING) == 0) {
-                blackKing = bitPiece ^ blackKing;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.QUEEN) == 0) {
-                blackQueens = bitPiece ^ blackQueens;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.ROOK) == 0) {
-                blackRooks = bitPiece ^ blackRooks;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
-                blackKnights = bitPiece ^ blackKnights;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.BISHOP) == 0) {
-                blackBishops = bitPiece ^ blackBishops;
-            }
+    private long getBoard(ChessGame.TeamColor color, ChessPiece.PieceType type) {
+        boolean white = color == ChessGame.TeamColor.WHITE;
+        return switch (type) {
+            case PAWN -> white ? whitePawns : blackPawns;
+            case KNIGHT -> white ? whiteKnights : blackKnights;
+            case BISHOP -> white ? whiteBishops : blackBishops;
+            case ROOK -> white ? whiteRooks : blackRooks;
+            case QUEEN -> white ? whiteQueens : blackQueens;
+            case KING -> white ? whiteKing : blackKing;
+        };
+    }
+
+    private void setBoard(ChessGame.TeamColor color, ChessPiece.PieceType type, long value) {
+        boolean white = color == ChessGame.TeamColor.WHITE;
+        switch (type) {
+            case PAWN -> { if (white) { whitePawns = value; } else { blackPawns = value; } }
+            case KNIGHT -> { if (white) { whiteKnights = value; } else { blackKnights = value; } }
+            case BISHOP -> { if (white) { whiteBishops = value; } else { blackBishops = value; } }
+            case ROOK -> { if (white) { whiteRooks = value; } else { blackRooks = value; } }
+            case QUEEN -> { if (white) { whiteQueens = value; } else { blackQueens = value; } }
+            case KING -> { if (white) { whiteKing = value; } else { blackKing = value; } }
         }
+    }
+
+    public void removeBitPiece(ChessPosition position, ChessPiece piece) {
+        ChessGame.TeamColor color = piece.getTeamColor();
+        ChessPiece.PieceType type = piece.getPieceType();
+        setBoard(color, type, getBoard(color, type) & ~toBit(position.getRow(), position.getColumn()));
     }
 
     public void addBitPiece(ChessPiece piece, long bitPiece) {
         if (piece == null) {
             return;
         }
-        if (piece.getTeamColor().compareTo(ChessGame.TeamColor.WHITE) == 0) {
-            if (piece.getPieceType().compareTo(ChessPiece.PieceType.PAWN) == 0) {
-                whitePawns = bitPiece |  whitePawns;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KING) == 0) {
-                whiteKing = bitPiece | whiteKing;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.QUEEN) == 0) {
-                whiteQueens = bitPiece |  whiteQueens;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.ROOK) == 0) {
-                whiteRooks = bitPiece | whiteRooks;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
-                whiteKnights = bitPiece | whiteKnights;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.BISHOP) == 0) {
-                whiteBishops = bitPiece | whiteBishops;
-            }
-        } else {
-            if (piece.getPieceType().compareTo(ChessPiece.PieceType.PAWN) == 0) {
-                blackPawns = bitPiece | blackPawns;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KING) == 0) {
-                blackKing = bitPiece ^ blackKing;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.QUEEN) == 0) {
-                blackQueens = bitPiece | blackQueens;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.ROOK) == 0) {
-                blackRooks = bitPiece | blackRooks;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
-                blackKnights = bitPiece | blackKnights;
-            } else if (piece.getPieceType().compareTo(ChessPiece.PieceType.BISHOP) == 0) {
-                blackBishops = bitPiece | blackBishops;
-            }
-        }
+        ChessGame.TeamColor color = piece.getTeamColor();
+        ChessPiece.PieceType type = piece.getPieceType();
+        setBoard(color, type, getBoard(color, type) | bitPiece);
     }
 
     public ChessPiece getBitPiece(ChessPosition position) {
-        int place = ((position.getRow() - 1) * 8) + position.getColumn() - 1;
-        long bitPosition = 1L << place;
-        ChessPiece piece = null;
-        if ((bitPosition & whitePawns) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-        } else if ((bitPosition & whiteKnights) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
-        } else if ((bitPosition & whiteKing) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
-        } else if ((bitPosition & whiteRooks) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
-        } else if ((bitPosition & whiteBishops) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
-        } else if ((bitPosition & whiteQueens) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN);
-        } else if ((bitPosition & blackPawns) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
-        } else if ((bitPosition & blackKnights) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
-        } else if ((bitPosition & blackKing) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
-        } else if ((bitPosition & blackRooks) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
-        } else if ((bitPosition & blackBishops) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
-        } else if ((bitPosition & blackQueens) != 0) {
-            piece = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
+        long bit = toBit(position.getRow(), position.getColumn());
+        for (ChessGame.TeamColor color : ChessGame.TeamColor.values()) {
+            for(ChessPiece.PieceType type : ChessPiece.PieceType.values()) {
+                if ((getBoard(color, type) & bit) != 0) {
+                    return new ChessPiece(color, type);
+                }
+            }
         }
-        return piece;
+        return null;
     }
 
     public Collection<ChessMove> movedCollection(long pieceBit, ChessPiece.PieceType type, ChessGame.TeamColor color, ChessPosition position) {
@@ -161,9 +111,9 @@ public class BitBoard {
         } else if (type.compareTo(ChessPiece.PieceType.PAWN) == 0) {
             allMoves = movePawn(pieceBit, position, color);
         } else if (type.compareTo(ChessPiece.PieceType.KNIGHT) == 0) {
-            allMoves = moveKnight(pieceBit, position, color);
+            allMoves = moveKnight(position, color);
         } else if (type.compareTo(ChessPiece.PieceType.KING) == 0) {
-            allMoves = moveKing(pieceBit, position, color);
+            allMoves = moveKing(position, color);
         }
         return allMoves;
     }
@@ -175,7 +125,6 @@ public class BitBoard {
     private long blackBoard() {
         return blackPawns ^ blackRooks ^ blackKnights ^ blackBishops ^ blackQueens ^ blackKing;
     }
-
     long fileGen(int col) {
         long file = 0x0101010101010101L;
         file = file << col;
@@ -240,7 +189,6 @@ public class BitBoard {
         int team = kingRow * 8 + kingCol;
         long fileMask = fileGen(col);
         int piece = row * 8 + col;
-
         int lo = Math.min(team, piece); int hi = Math.max(team, piece);
         long between = ((1L << hi) - (1L << lo)) - (1L << lo);
 
@@ -253,7 +201,6 @@ public class BitBoard {
         } else {
             if (kingCol == col) {between = between & fileMask;}
         }
-
         return (between & (whiteBoard() | blackBoard())) == 0;
     }
 
@@ -346,33 +293,25 @@ public class BitBoard {
         }
     }
 
-    private Collection<ChessMove> moveKing(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
+    private Collection<ChessMove> moveKing(ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-        int row = position.getRow();
-        int col = position.getColumn();
         long teamColor = whiteBoard();
 
         if (color.compareTo(ChessGame.TeamColor.BLACK) == 0) {
             teamColor = blackBoard();
         }
-
         steps(allMoves, position, KING, teamColor);
-
         return allMoves;
     }
 
-    private Collection<ChessMove> moveKnight(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
+    private Collection<ChessMove> moveKnight(ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
-        int row = position.getRow();
-        int col = position.getColumn();
         long teamColor = whiteBoard();
 
         if (color.compareTo(ChessGame.TeamColor.BLACK) == 0) {
             teamColor = blackBoard();
         }
-
         steps(allMoves, position, KNIGHT, teamColor);
-
         return allMoves;
     }
 
@@ -392,7 +331,6 @@ public class BitBoard {
         long upTwo = (pieceBit << 8) | (pieceBit << 16);
         long takeRightW = pieceBit << 9;
         long takeLeftW = pieceBit << 7;
-
         long downOne = pieceBit >>> 8;
         long downTwo = (pieceBit >>> 8) | (pieceBit >>> 16);
         long takeRightB = pieceBit >>> 9;
@@ -465,8 +403,6 @@ public class BitBoard {
                     }
                 }
             }
-
-
         return allMoves;
     }
 
@@ -488,11 +424,9 @@ public class BitBoard {
             }
         }
     }
-
     private long toBit(int row, int col) {
         return 1L << ((row - 1) * 8 + (col - 1));
     }
-
 
     private Collection<ChessMove> moveBishop(long pieceBit, ChessPosition position, ChessGame.TeamColor color) {
         Collection<ChessMove> allMoves = new ArrayList<>();
@@ -517,9 +451,7 @@ public class BitBoard {
             teamColor = blackBoard();
             opColor = whiteBoard();
         }
-
         slide(allMoves, position, ROOK_DIRS, teamColor, opColor);
-
         return allMoves;
     }
 
@@ -532,10 +464,8 @@ public class BitBoard {
             teamColor = blackBoard();
             opColor = whiteBoard();
         }
-
         slide(allMoves, position, ROOK_DIRS, teamColor, opColor);
         slide(allMoves, position, BISHOP_DIRS, teamColor, opColor);
-
         return allMoves;
         }
 
@@ -544,7 +474,6 @@ public class BitBoard {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         BitBoard bitBoard = (BitBoard) o;
         return whitePawns == bitBoard.whitePawns && whiteKing == bitBoard.whiteKing &&
                 whiteQueens == bitBoard.whiteQueens && whiteRooks == bitBoard.whiteRooks &&
