@@ -51,7 +51,9 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = _currentBoard.getPiece(startPosition);
         Vector<ChessMove> allMoves = new Vector<ChessMove>();
-        if (piece == null) return new Vector<>();
+        if (piece == null) {
+            return new Vector<>();
+        }
         Collection<ChessMove> moves = piece.pieceMoves(_currentBoard, startPosition);
         for (ChessMove i : moves) {
             ChessBoard tempBoard = new ChessBoard(new BitBoard(_currentBoard._board));
@@ -121,7 +123,9 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (!_currentBoard._board.isInCheck(teamColor)) return false;
+        if (!_currentBoard._board.isInCheck(teamColor)) {
+            return false;
+        }
         return inCheckNext(teamColor);
     }
 
@@ -129,12 +133,16 @@ public class ChessGame {
         for (int i = 1; i <= 8; i++) {
             for (int y = 1; y <= 8; y++) {
                 ChessPiece piece = _currentBoard._board.getBitPiece(new ChessPosition(i, y));
-                if (piece == null || piece.getTeamColor() != teamColor) continue;
+                if (piece == null || piece.getTeamColor() != teamColor) {
+                    continue;
+                }
                 Collection<ChessMove> chessMoves = piece.pieceMoves(_currentBoard, new ChessPosition(i, y));
                 for (ChessMove move : chessMoves) {
                     ChessBoard tempBoard = new ChessBoard(new BitBoard(_currentBoard._board));
                     applyMove(tempBoard, move);
-                    if (!tempBoard._board.isInCheck(teamColor)) return false;
+                    if (!tempBoard._board.isInCheck(teamColor)) {
+                        return false;
+                    }
                 }
             }
         }

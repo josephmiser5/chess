@@ -215,7 +215,9 @@ public class BitBoard {
 
     boolean attacks(int[] piece, int[] king, int[][] offsets) {
         for (int[] i : offsets) {
-            if (king[0] == piece[0] + i[0] && king[1] == piece[1] + i[1] ) return true;
+            if (king[0] == piece[0] + i[0] && king[1] == piece[1] + i[1] ) {
+                return true;
+            }
         }
         return false;
     }
@@ -297,20 +299,28 @@ public class BitBoard {
     }
 
     public boolean inCheckWhite() {
-        if (whiteKing == 0) return false;
+        if (whiteKing == 0) {
+            return false;
+        }
         int[] kingPos = posGen(whiteKing);
         return crossFill(kingPos, ChessGame.TeamColor.BLACK);
     }
 
     public boolean inCheckBlack() {
-        if (blackKing == 0) return false;
+        if (blackKing == 0) {
+            return false;
+        }
         int[] kingPos = posGen(blackKing);
         return crossFill(kingPos, ChessGame.TeamColor.WHITE);
     }
 
     public boolean isInCheck(ChessGame.TeamColor teamColor) {
-        if (teamColor == ChessGame.TeamColor.WHITE) return inCheckWhite();
-        else return inCheckBlack();
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return inCheckWhite();
+        }
+        else {
+            return inCheckBlack();
+        }
     }
 
 
@@ -711,7 +721,12 @@ public class BitBoard {
         }
 
         BitBoard bitBoard = (BitBoard) o;
-        return whitePawns == bitBoard.whitePawns && whiteKing == bitBoard.whiteKing && whiteQueens == bitBoard.whiteQueens && whiteRooks == bitBoard.whiteRooks && whiteKnights == bitBoard.whiteKnights && whiteBishops == bitBoard.whiteBishops && blackPawns == bitBoard.blackPawns && blackKing == bitBoard.blackKing && blackQueens == bitBoard.blackQueens && blackRooks == bitBoard.blackRooks && blackKnights == bitBoard.blackKnights && blackBishops == bitBoard.blackBishops;
+        return whitePawns == bitBoard.whitePawns && whiteKing == bitBoard.whiteKing &&
+                whiteQueens == bitBoard.whiteQueens && whiteRooks == bitBoard.whiteRooks &&
+                whiteKnights == bitBoard.whiteKnights && whiteBishops == bitBoard.whiteBishops &&
+                blackPawns == bitBoard.blackPawns && blackKing == bitBoard.blackKing &&
+                blackQueens == bitBoard.blackQueens && blackRooks == bitBoard.blackRooks &&
+                blackKnights == bitBoard.blackKnights && blackBishops == bitBoard.blackBishops;
     }
 
     @Override

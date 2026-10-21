@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import request.*;
 import result.CreateGameResult;
+import result.ListGamesResult;
 import result.RegisterResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
@@ -37,7 +38,7 @@ public class GameServiceTest {
     }
 
 
-    public RegisterResult registerUser() throws DataAccessException {
+    private RegisterResult registerUser() throws DataAccessException {
         RegisterRequest req = new RegisterRequest(usernames[1], passwords[1], emails[1]);
         return userService.register(req);
     }
@@ -89,4 +90,29 @@ public class GameServiceTest {
             gameService.joinGame(joinRequest);
         });
     }
+
+    @Test
+    @DisplayName("listGames succeeds")
+    public void listGamesPositive() throws DataAccessException {
+        RegisterResult user = registerUser();
+        CreateGameResult createResult = gameService.createGame(new CreateGameRequest(user.authToken(), "super fun"));
+        JoinGameRequest joinRequest = new JoinGameRequest(user.authToken(), ChessGame.TeamColor.BLACK, createResult.gameID());
+        gameService.joinGame(joinRequest);
+        ListGamesResult games = gameService.listGames(new ListGamesRequest(user.authToken()));
+        GameData testGame = games.games().getFirst();
+        assertNotNull(games);
+        assertEquals("super fun", testGame.gameName());
+        assertEquals(createResult.gameID(), testGame.gameID());
+        assertEquals(user.username(), testGame.blackUsername());
+        assertNull(testGame.whiteUsername());
+    }
+
+    @Test
+    @DisplayName("listGames fails")
+    public void listGamesNegative() throws DataAccessException {
+        assertThrowsExactly(UnauthorizedException.class, () -> {
+            gameService.listGames(new ListGamesRequest(authTokens[0]));
+        });
+    }
+
 }
