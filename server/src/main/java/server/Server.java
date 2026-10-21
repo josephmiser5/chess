@@ -4,18 +4,15 @@ import com.google.gson.Gson;
 import dataaccess.*;
 import io.javalin.*;
 
-import io.javalin.http.Context;
-import io.javalin.json.JsonMapper;
-import org.jetbrains.annotations.NotNull;
 import request.*;
 import result.*;
+import service.ClearService;
 import service.GameService;
 import service.UserService;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 
 public class Server {
@@ -33,6 +30,7 @@ public class Server {
         GameDAO gameDAO = new MemoryGameDAO();
         UserService userService = new UserService(userDAO, authDAO);
         GameService gameService = new GameService(userDAO, authDAO, gameDAO);
+        ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
         Gson gson = new Gson();
 
@@ -84,9 +82,7 @@ public class Server {
         });
 
         javalin.delete("/db", ctx -> {
-            userDAO.clear();
-            authDAO.clear();
-            gameDAO.clear();
+            clearService.clear();
             ctx.status(200);
             ctx.result("{}");
         });
