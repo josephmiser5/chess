@@ -25,7 +25,12 @@ public class Server {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         // Register your endpoints and exception handlers here.
 
-        UserDAO userDAO = new MemoryUserDAO();
+        UserDAO userDAO;
+        try {
+            userDAO = new DatabaseUserDAO();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
         UserService userService = new UserService(userDAO, authDAO);
