@@ -1,8 +1,9 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
-import java.util.ArrayList;
 
 public class DatabaseUserDAO implements UserDAO {
 
@@ -13,13 +14,14 @@ public class DatabaseUserDAO implements UserDAO {
 
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
+        String hash = passwordHash(password);
         var sql = """
                 INSERT INTO user (username, password, email) VALUES(?, ?, ?);
                 """;
         try (var con = DatabaseManager.getConnection();
              var ps = con.prepareStatement(sql)) {
             ps.setString(1, username);
-            ps.setString(2, password);
+            ps.setString(2, hash);
             ps.setString(3, email);
             ps.executeUpdate();
 
@@ -54,6 +56,15 @@ public class DatabaseUserDAO implements UserDAO {
 
     @Override
     public void clear() throws DataAccessException {
+        var sql = """
+                TRUNCATE TABLE user;
+                """;
+        try (var con = DatabaseManager.getConnection();
+             var ps = con.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("unable to clear database", e);
+        }
     }
 
     private void configureDatabase() throws DataAccessException {
@@ -71,5 +82,9 @@ public class DatabaseUserDAO implements UserDAO {
         } catch (SQLException e) {
             throw new DataAccessException("unable to configure database", e);
         }
+    }
+
+    private String passwordHash(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }
