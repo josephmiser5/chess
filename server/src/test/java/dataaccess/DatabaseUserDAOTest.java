@@ -45,7 +45,12 @@ public class DatabaseUserDAOTest {
 
     @Test
     @DisplayName("clear succeeds")
-    public void clearPositive() {
-        
+    public void clearPositive() throws DataAccessException {
+        userDAO.createUser(username, password, email);
+        assertNotNull(userDAO.getUser(username));
+
+        userDAO.clear();
+
+        assertNull(userDAO.getUser(username));
     }
 }

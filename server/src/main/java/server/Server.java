@@ -26,12 +26,17 @@ public class Server {
         // Register your endpoints and exception handlers here.
 
         UserDAO userDAO;
+        AuthDAO authDAO;
         try {
             userDAO = new DatabaseUserDAO();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        AuthDAO authDAO = new MemoryAuthDAO();
+        try {
+            authDAO = new DatabaseAuthDAO();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         GameDAO gameDAO = new MemoryGameDAO();
         UserService userService = new UserService(userDAO, authDAO);
         GameService gameService = new GameService(userDAO, authDAO, gameDAO);

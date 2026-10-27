@@ -5,6 +5,7 @@ import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import request.LogoutRequest;
 import request.RegisterRequest;
@@ -46,7 +47,7 @@ public class UserService {
         UserData userData = userDAO.getUser(req.username());
         if (userData == null) {
             throw new UnauthorizedException();
-        } if (!req.password().equals(userData.password())) {
+        } if (!BCrypt.checkpw(req.password(), userData.password())) {
             throw new UnauthorizedException();
         }
         String authToken = generateToken();
