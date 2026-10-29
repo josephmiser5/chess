@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,11 @@ public class DatabaseUserDAOTest {
         username = UUID.randomUUID().toString()
                 .replace("-", "")
                 .substring(0, 10);
+    }
+
+    @AfterEach
+    public void tearDown() throws DataAccessException {
+        userDAO.clear();
     }
 
     @Test
@@ -44,8 +50,8 @@ public class DatabaseUserDAOTest {
 
 
     @Test
-    @DisplayName("clear succeeds")
-    public void clearPositive() throws DataAccessException {
+    @DisplayName("clear")
+    public void clear() throws DataAccessException {
         userDAO.createUser(username, password, email);
         assertNotNull(userDAO.getUser(username));
 

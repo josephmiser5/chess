@@ -29,7 +29,7 @@ public class DatabaseAuthDAO implements AuthDAO{
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
        var sql = """
-                SELECT * FROM auth WHERE authToken = ?
+                SELECT * FROM auth WHERE authToken = ?;
                 """;
        try (var con = DatabaseManager.getConnection();
             var ps = con.prepareStatement(sql)) {
@@ -49,11 +49,29 @@ public class DatabaseAuthDAO implements AuthDAO{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-
+       var sql = """
+               DELETE FROM auth WHERE authToken = ?;
+               """;
+       try (var con = DatabaseManager.getConnection();
+            var ps = con.prepareStatement(sql)) {
+           ps.setString(1, authToken);
+           ps.executeUpdate();
+       } catch (SQLException e) {
+           throw new DataAccessException("unable to delete auth", e);
+       }
     }
 
     @Override
     public void clear() throws DataAccessException {
+        var sql = """
+                TRUNCATE TABLE auth;
+                """;
+        try (var con = DatabaseManager.getConnection();
+             var ps = con.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("unable to clear database", e);
+        }
 
     }
 
