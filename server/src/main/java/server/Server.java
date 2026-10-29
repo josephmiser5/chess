@@ -27,6 +27,7 @@ public class Server {
 
         UserDAO userDAO;
         AuthDAO authDAO;
+        GameDAO gameDAO;
         try {
             userDAO = new DatabaseUserDAO();
         } catch (DataAccessException e) {
@@ -37,7 +38,11 @@ public class Server {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        GameDAO gameDAO = new MemoryGameDAO();
+        try {
+            gameDAO = new DatabaseGameDAO();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         UserService userService = new UserService(userDAO, authDAO);
         GameService gameService = new GameService(userDAO, authDAO, gameDAO);
         ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
