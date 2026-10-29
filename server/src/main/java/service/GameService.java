@@ -42,7 +42,7 @@ public class GameService {
             throw new BadRequestException();
         }
         getThrowAuth(req.authToken());
-        ArrayList<GameData> games = (ArrayList<GameData>) gameDAO.getAllGames();
+        ArrayList<GameData> games = new ArrayList<>(gameDAO.getAllGames());
         return new ListGamesResult(games);
     }
 
@@ -69,12 +69,14 @@ public class GameService {
         GameData newGameData;
 
         if (req.playerColor().equals(ChessGame.TeamColor.WHITE) && gameData.whiteUsername() == null) {
-            newGameData = new GameData(gameID, authData.username(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+            newGameData = new GameData(gameID, authData.username(), gameData.blackUsername(),
+                    gameData.gameName(), gameData.game());
             gameDAO.updateGame(newGameData);
         } else if (req.playerColor().equals(ChessGame.TeamColor.WHITE)) {
             throw new AlreadyTakenException();
         } else if (req.playerColor().equals(ChessGame.TeamColor.BLACK) && gameData.blackUsername() == null) {
-            newGameData = new GameData(gameID, gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game());
+            newGameData = new GameData(gameID, gameData.whiteUsername(), authData.username(),
+                    gameData.gameName(), gameData.game());
             gameDAO.updateGame(newGameData);
         } else if (req.playerColor().equals(ChessGame.TeamColor.BLACK)) {
             throw new AlreadyTakenException();
