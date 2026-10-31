@@ -33,15 +33,7 @@ public class Server {
         GameDAO gameDAO;
         try {
             userDAO = new DatabaseUserDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-        try {
             authDAO = new DatabaseAuthDAO();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-        try {
             gameDAO = new DatabaseGameDAO();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
