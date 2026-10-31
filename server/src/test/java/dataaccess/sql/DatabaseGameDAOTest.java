@@ -2,7 +2,6 @@ package dataaccess.sql;
 
 import chess.*;
 import dataaccess.DataAccessException;
-import dataaccess.DatabaseGameDAO;
 import dataaccess.GameDAO;
 import model.GameData;
 import org.junit.jupiter.api.AfterEach;

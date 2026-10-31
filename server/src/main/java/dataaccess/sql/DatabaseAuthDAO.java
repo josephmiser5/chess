@@ -1,10 +1,13 @@
-package dataaccess;
+package dataaccess.sql;
 
+import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import model.AuthData;
 
 import java.sql.SQLException;
 
-public class DatabaseAuthDAO implements AuthDAO{
+public class DatabaseAuthDAO implements AuthDAO {
 
    public DatabaseAuthDAO() throws DataAccessException {
        DatabaseManager.getConnection();

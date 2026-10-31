@@ -2,6 +2,9 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import dataaccess.sql.DatabaseAuthDAO;
+import dataaccess.sql.DatabaseGameDAO;
+import dataaccess.sql.DatabaseUserDAO;
 import io.javalin.*;
 
 import request.*;
