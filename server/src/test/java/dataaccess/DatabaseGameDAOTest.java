@@ -1,15 +1,13 @@
 package dataaccess;
 
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
-import model.AuthData;
+import chess.*;
 import model.GameData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +16,6 @@ public class DatabaseGameDAOTest {
 
 
     String authToken;
-    String username = "Joe";
     String gameName = "fun times game";
     private GameDAO gameDAO;
 
@@ -46,8 +43,27 @@ public class DatabaseGameDAOTest {
     }
 
     @Test
-    @DisplayName("getGame succeeds")
-    public void getGamePositive() {
+    @DisplayName("getAllGames")
+    public void getAllGames() throws DataAccessException {
+        int gameID1 = gameDAO.createGame("checkers");
+        int gameID2 = gameDAO.createGame("another game");
+        GameData game1 = gameDAO.getGame(gameID1);
+        GameData game2 = gameDAO.getGame(gameID2);
+        ArrayList<GameData> allGames = (ArrayList<GameData>) gameDAO.getAllGames();
+        assertEquals(game1, allGames.getFirst());
+        assertEquals(game2, allGames.get(1));
     }
 
+    @Test
+    @DisplayName("updateGame")
+    public void updateGame() throws DataAccessException, InvalidMoveException {
+        int gameID = gameDAO.createGame(gameName);
+        GameData game = gameDAO.getGame(gameID);
+        assertEquals(new ChessGame(), game.game());
+
+        game.game().applyMove(game.game().getBoard(), new ChessMove(new ChessPosition(2, 1),
+                new ChessPosition(3, 1), ChessPiece.PieceType.PAWN));
+        gameDAO.updateGame(game);
+        assertNotEquals(new ChessGame(), game.game());
+    }
 }
