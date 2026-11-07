@@ -17,12 +17,12 @@ public class webClient {
         this.baseUrl = baseUrl;
     }
 
-    public <T> T post(String path, Object body, String authToken, Class<T> responseClass) throws URISyntaxException, ResponseException {
+    public <T> T post(String path, Object body, String authToken, Class<T> responseClass) throws ResponseException {
         return send("POST", path, body, authToken, responseClass);
     }
 
 
-    public <T> void delete(String path, Object body, String authToken, Class<T> responseClass) throws URISyntaxException, ResponseException {
+    public <T> void delete(String path, Object body, String authToken, Class<T> responseClass) throws ResponseException {
         send("DELETE", path, body, authToken, responseClass);
     }
 

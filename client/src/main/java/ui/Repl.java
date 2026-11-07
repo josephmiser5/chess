@@ -60,7 +60,7 @@ public class Repl {
     }
 
 
-    public void run() throws ResponseException, URISyntaxException {
+    public void run() {
         System.out.print(ERASE_SCREEN);
         System.out.flush();
         System.out.println("Welcome to chessIsDaBomb.com! Type help to get started.");
@@ -81,13 +81,24 @@ public class Repl {
     }
 
     public void help() {
-        printCommand("register", "<USERNAME> <PASSWORD> <EMAIL> - to create account");
-        printCommand("login", "<USERNAME> <PASSWORD> - to login");
-        printCommand("exit", "to exit game");
-        printCommand("help", "for information");
+        if (state == State.SIGNEDOUT) {
+            printCommand("register", "<USERNAME> <PASSWORD> <EMAIL> - to create account");
+            printCommand("login", "<USERNAME> <PASSWORD> - to login");
+            printCommand("logout", "when you are done");
+            printCommand("exit", "to exit game");
+            printCommand("help", "for information");
+        } else if (state == State.SIGNEDIN) {
+            printCommand("create", "<NAME> - a game");
+            printCommand("list", "games");
+            printCommand("join", "<ID> [WHITE|BLACK] - a game");
+            printCommand("observe", "<ID> - a game");
+            printCommand("logout", "when you are done");
+            printCommand("exit", "to exit game");
+            printCommand("help", "for information");
+        }
     }
 
-    public void login(String username, String password) throws ResponseException, URISyntaxException {
+    public void login(String username, String password) {
         try {
             facade.login(username, password);
         } catch (ResponseException e) {
@@ -106,7 +117,7 @@ public class Repl {
         state = State.SIGNEDIN;
     }
 
-    public void register(String username, String password, String email) throws ResponseException, URISyntaxException {
+    public void register(String username, String password, String email) {
         try {
             facade.register(username, password, email);
         } catch (ResponseException e) {
@@ -125,7 +136,7 @@ public class Repl {
         state = State.SIGNEDIN;
     }
 
-    public void logout() throws URISyntaxException {
+    public void logout() {
         try {
             facade.logout();
         } catch (ResponseException e) {
@@ -141,6 +152,14 @@ public class Repl {
         }
         printSuccess("Thanks for playing!");
         state = State.SIGNEDOUT;
+    }
+
+    public void createGame(String gameName) {
+        try {
+            facade.createGame(gameName);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void printSuccess(String message) {
