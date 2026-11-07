@@ -14,6 +14,7 @@ import result.RegisterResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
+import org.mindrot.jbcrypt.BCrypt;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,7 +54,7 @@ public class UserServiceTest {
         assertEquals(usernames[0], res.username());
         assertNotNull(userData);
         assertEquals(usernames[0], userData.username());
-        assertEquals(passwords[0], userData.password());
+        assertTrue(BCrypt.checkpw(passwords[0], userData.password()));
         assertEquals(emails[0], userData.email());
 
         assertNotEquals(res1.authToken(), res.authToken());
@@ -82,7 +83,7 @@ public class UserServiceTest {
 
         UserData stored = userDAO.getUser(usernames[0]);
         assertNotNull(stored);
-        assertEquals(passwords[0], stored.password());
+        assertTrue(BCrypt.checkpw(passwords[0], stored.password()));
         assertEquals(emails[0], stored.email());
     }
 
