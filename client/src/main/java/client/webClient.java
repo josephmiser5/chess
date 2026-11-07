@@ -21,6 +21,11 @@ public class webClient {
         return send("POST", path, body, authToken, responseClass);
     }
 
+
+    public <T> void delete(String path, Object body, String authToken, Class<T> responseClass) throws URISyntaxException, ResponseException {
+        send("DELETE", path, body, authToken, responseClass);
+    }
+
     private <T> T send(String method, String path, Object body, String authToken, Class<T> responseClass) throws ResponseException {
         try {
             var bodyPublisher = (body == null)

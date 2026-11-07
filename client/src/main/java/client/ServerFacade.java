@@ -31,7 +31,7 @@ public class ServerFacade {
     }
 
     public void logout() throws ResponseException, URISyntaxException {
-        http.post("/session", new LogoutRequest(authToken), authToken, LogoutResult.class);
+        http.delete("/session", new LogoutRequest(authToken), authToken, LogoutResult.class);
         authToken = null;
     }
 

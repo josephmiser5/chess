@@ -6,6 +6,7 @@ import result.RegisterResult;
 import static ui.EscapeSequences.*;
 
 import java.net.URISyntaxException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Repl {
@@ -47,12 +48,14 @@ public class Repl {
     }
 
     private void handlePostLogin(Scanner input) throws URISyntaxException {
-        printPrompt("LOGGED_IN");
+        printPrompt("[LOGGED_IN]");
         String line = input.nextLine();
         if (line.equalsIgnoreCase("help")) {
             help();
         } else if (line.equalsIgnoreCase("logout")) {
             logout();
+        } else if (line.equalsIgnoreCase("quit")) {
+            state = State.QUIT;
         }
     }
 
@@ -61,12 +64,18 @@ public class Repl {
         System.out.print(ERASE_SCREEN);
         System.out.flush();
         System.out.println("Welcome to chessIsDaBomb.com! Type help to get started.");
+        Scanner input = new Scanner(System.in);
         while (!state.equals(State.QUIT)) {
-            Scanner input = new Scanner(System.in);
-            if (state.equals(State.SIGNEDOUT)) {
-                handlePreLogin(input);
-            } else if (state.equals(State.SIGNEDIN)) {
-                handlePostLogin(input);
+            try {
+                if (state.equals(State.SIGNEDOUT)) {
+                    handlePreLogin(input);
+                } else if (state.equals(State.SIGNEDIN)) {
+                    handlePostLogin(input);
+                }
+            } catch (NoSuchElementException e) {
+                state = State.QUIT;
+            } catch (Exception e) {
+                printError("Something went wrong. Please try again.");
             }
         }
     }
@@ -82,7 +91,15 @@ public class Repl {
         try {
             facade.login(username, password);
         } catch (ResponseException e) {
-            printError("username or password is incorrect");
+            if (e.getStatus() == 401) {
+                printError("username or password is incorrect");
+            } else if (e.getStatus() == 400) {
+                printError("Please provide both username and password");
+            } else if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
+            }
             return;
         }
         printSuccess("Your logged in, lets start playing.");
@@ -93,8 +110,14 @@ public class Repl {
         try {
             facade.register(username, password, email);
         } catch (ResponseException e) {
-            if (e.getMessage().equalsIgnoreCase("Error: already taken")) {
+            if (e.getStatus() == 403) {
                 printError("username already taken");
+            } else if (e.getStatus() == 400) {
+                printError("Please provide username, password, and email.");
+            } else if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
             }
             return;
         }
@@ -106,7 +129,14 @@ public class Repl {
         try {
             facade.logout();
         } catch (ResponseException e) {
-            printError(e.getMessage());
+            if (e.getStatus() == 401) {
+                printError("Your session has expired. Please log in again.");
+                state = State.SIGNEDOUT;
+            } else if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
+            }
             return;
         }
         printSuccess("Thanks for playing!");
