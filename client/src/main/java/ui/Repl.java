@@ -56,6 +56,13 @@ public class Repl {
             logout();
         } else if (line.equalsIgnoreCase("quit")) {
             state = State.QUIT;
+        } else if (line.startsWith("create")) {
+            String[] authentication =  line.split(" ");
+            if (authentication.length != 2) {
+                printError("Please provide a game name.");
+                return;
+            }
+            createGame(authentication[1]);
         }
     }
 
@@ -156,9 +163,15 @@ public class Repl {
 
     public void createGame(String gameName) {
         try {
-            facade.createGame(gameName);
+            printSuccess("Your game ID is " + facade.createGame(gameName).gameID());
         } catch (ResponseException e) {
-            throw new RuntimeException(e);
+            if (e.getStatus() == 400) {
+                printError("Please provide a game name.");
+            } else if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
+            }
         }
     }
 

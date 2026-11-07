@@ -32,12 +32,17 @@ public class ServerFacade {
         return res;
     }
 
-    public void createGame(String gameName) throws ResponseException {
-        http.post("/game", new CreateGameRequest(authToken, gameName), authToken, CreateGameResult.class);
+    public CreateGameResult createGame(String gameName) throws ResponseException {
+        return http.post("/game", new CreateGameRequest(authToken, gameName), authToken, CreateGameResult.class);
     }
 
     public void logout() throws ResponseException {
         http.delete("/session", new LogoutRequest(authToken), authToken, LogoutResult.class);
+        authToken = null;
+    }
+
+    public void clear() throws ResponseException {
+        http.delete("/db", null, null, null);
         authToken = null;
     }
 
