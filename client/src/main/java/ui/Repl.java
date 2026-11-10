@@ -54,15 +54,19 @@ public class Repl {
             help();
         } else if (line.equalsIgnoreCase("logout")) {
             logout();
-        } else if (line.equalsIgnoreCase("quit")) {
+        } else if (line.equalsIgnoreCase("exit")) {
             state = State.QUIT;
         } else if (line.startsWith("create")) {
-            String[] authentication =  line.split(" ");
-            if (authentication.length != 2) {
+            String[] authentication = line.split(" ");
+            if (authentication.length < 2) {
                 printError("Please provide a game name.");
                 return;
             }
-            createGame(authentication[1]);
+            StringBuilder gameName = new StringBuilder();
+            for (int i = 1; i < authentication.length; i++) {
+                gameName.append(authentication[i]).append(" ");
+            }
+            createGame(gameName.toString());
         }
     }
 
@@ -163,7 +167,8 @@ public class Repl {
 
     public void createGame(String gameName) {
         try {
-            printSuccess("Your game ID is " + facade.createGame(gameName).gameID());
+            facade.createGame(gameName);
+            printSuccess("Created game: " + gameName);
         } catch (ResponseException e) {
             if (e.getStatus() == 400) {
                 printError("Please provide a game name.");
