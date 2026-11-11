@@ -1,6 +1,7 @@
 package client;
 
 import chess.*;
+import ui.DrawBoard;
 import ui.Repl;
 
 import java.net.URISyntaxException;
