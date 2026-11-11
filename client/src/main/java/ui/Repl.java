@@ -1,20 +1,23 @@
 package ui;
+import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
+import model.GameData;
 import result.LoginResult;
 import result.RegisterResult;
 import static ui.EscapeSequences.*;
 
 import java.net.URISyntaxException;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 
 public class Repl {
-    ServerFacade facade;
-    State state = State.SIGNEDOUT;
+    private final ServerFacade facade;
+    private State state = State.SIGNEDOUT;
+    private HashMap<Integer, Integer> gameIDMap;
 
     public Repl(ServerFacade facade) {
         this.facade = facade;
+        gameIDMap = new HashMap<>();
     }
 
     private enum State {
@@ -67,6 +70,15 @@ public class Repl {
                 gameName.append(authentication[i]).append(" ");
             }
             createGame(gameName.toString());
+        } else if (line.equalsIgnoreCase("list")) {
+            listGames();
+        } else if (line.startsWith("join")) {
+            String[] gameDetails = line.split(" ");
+            if (gameDetails.length < 3) {
+                printError("Please provide an ID and a team color");
+                return;
+            }
+            joinGame(Integer.parseInt(gameDetails[1]), gameDetails[2]);
         }
     }
 
@@ -165,6 +177,31 @@ public class Repl {
         state = State.SIGNEDOUT;
     }
 
+    public void listGames() {
+        try {
+            ArrayList<GameData> games = facade.listGames();
+            gameIDMap.clear();
+            int number = 1;
+            for (GameData game : games) {
+                printSuccess("ID: " + number + ". Name: " + game.gameName() + ". " + "White: " +
+                        game.whiteUsername() + ". Black: " + game.blackUsername() + ".");
+                gameIDMap.put(number, game.gameID());
+                number = number + 1;
+            }
+        } catch (ResponseException e) {
+            if (e.getStatus() == 401) {
+                printError("Your session has expired. Please log in again.");
+            } else if (e.getStatus() == 400) {
+                printError("Something went wrong. Please log in again.");
+            } else if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
+            }
+
+        }
+    }
+
     public void createGame(String gameName) {
         try {
             facade.createGame(gameName);
@@ -178,6 +215,35 @@ public class Repl {
                 printError("Something went wrong. Please try again.");
             }
         }
+    }
+
+    public void joinGame(int id, String team) {
+        ChessGame.TeamColor teamColor = null;
+        int gameID = gameIDMap.get(id);
+        if (team.equalsIgnoreCase("white")) {
+            teamColor = ChessGame.TeamColor.WHITE;
+        } else if (team.equalsIgnoreCase("black")) {
+            teamColor = ChessGame.TeamColor.BLACK;
+        } else {
+            printError("Please enter a valid team color: [WHITE|BLACK].");
+        }
+        try {
+            facade.joinGame(teamColor, gameID);
+        } catch (ResponseException e) {
+            System.out.println(e.getStatus());
+            if (e.getStatus() == 403) {
+                printError("Seat for " + team.toUpperCase() + " is already taken.");
+            } else if (e.getStatus() == 401) {
+                printError("Your session has expired. Please log in again.");
+            } else if (e.getStatus() == 400) {
+                printError("Please enter ID, and team color. If that does not work, the game may not exist.");
+            } else if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
+            }
+        }
+        printSuccess("Game joined");
     }
 
     private void printSuccess(String message) {

@@ -26,6 +26,14 @@ public class webClient {
         send("DELETE", path, body, authToken, responseClass);
     }
 
+    public <T> T get(String path, Object body, String authToken, Class<T> responseClass) throws ResponseException {
+        return send("GET", path, body, authToken, responseClass);
+    }
+
+    public <T> T put(String path, Object body, String authToken, Class<T> responseClass) throws ResponseException {
+        return send("PUT", path, body, authToken, responseClass);
+    }
+
     private <T> T send(String method, String path, Object body, String authToken, Class<T> responseClass) throws ResponseException {
         try {
             var bodyPublisher = (body == null)

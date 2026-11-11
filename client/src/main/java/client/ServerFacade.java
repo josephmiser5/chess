@@ -1,16 +1,13 @@
 package client;
 
+import chess.ChessGame;
 import model.AuthData;
-import request.CreateGameRequest;
-import request.LoginRequest;
-import request.LogoutRequest;
-import request.RegisterRequest;
-import result.CreateGameResult;
-import result.LoginResult;
-import result.LogoutResult;
-import result.RegisterResult;
+import model.GameData;
+import request.*;
+import result.*;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class ServerFacade {
     private final webClient http;
@@ -32,8 +29,8 @@ public class ServerFacade {
         return res;
     }
 
-    public CreateGameResult createGame(String gameName) throws ResponseException {
-        return http.post("/game", new CreateGameRequest(authToken, gameName), authToken, CreateGameResult.class);
+    public void createGame(String gameName) throws ResponseException {
+        http.post("/game", new CreateGameRequest(authToken, gameName), authToken, CreateGameResult.class);
     }
 
     public void logout() throws ResponseException {
@@ -46,7 +43,13 @@ public class ServerFacade {
         authToken = null;
     }
 
-    public void create() throws ResponseException{}
+    public ArrayList<GameData> listGames() throws ResponseException{
+        return (ArrayList<GameData>) http.get("/game", new ListGamesRequest(authToken), authToken, ListGamesResult.class).games();
+    }
+
+    public void joinGame(ChessGame.TeamColor team, int gameID) throws ResponseException {
+        http.put("/game", new JoinGameRequest(authToken, team, gameID), authToken, JoinGameResult.class);
+    }
 
     public boolean isLoggedIn() {
         return authToken != null;
