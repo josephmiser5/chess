@@ -73,12 +73,19 @@ public class Repl {
         } else if (line.equalsIgnoreCase("list")) {
             listGames();
         } else if (line.startsWith("join")) {
-            String[] gameDetails = line.split(" ");
-            if (gameDetails.length < 3) {
+            String[] gameDetails = line.trim().split("\\s+");
+            if (gameDetails.length != 3) {
                 printError("Please provide an ID and a team color");
                 return;
             }
-            joinGame(Integer.parseInt(gameDetails[1]), gameDetails[2]);
+            int id;
+            try {
+                id = Integer.parseInt(gameDetails[1]);
+            } catch (NumberFormatException e) {
+                printError("ID must be a number. Type 'list' to see games.");
+                return;
+            }
+            joinGame(id, gameDetails[2]);
         }
     }
 
@@ -218,7 +225,11 @@ public class Repl {
     }
 
     public void joinGame(int id, String team) {
-        ChessGame.TeamColor teamColor = null;
+        ChessGame.TeamColor teamColor;
+        if (!gameIDMap.containsKey(id)) {
+            printError("Game does not exist. Type 'list' to see games.");
+            return;
+        }
         int gameID = gameIDMap.get(id);
         if (team.equalsIgnoreCase("white")) {
             teamColor = ChessGame.TeamColor.WHITE;
@@ -226,11 +237,12 @@ public class Repl {
             teamColor = ChessGame.TeamColor.BLACK;
         } else {
             printError("Please enter a valid team color: [WHITE|BLACK].");
+            return;
         }
         try {
             facade.joinGame(teamColor, gameID);
+            printSuccess("Game joined");
         } catch (ResponseException e) {
-            System.out.println(e.getStatus());
             if (e.getStatus() == 403) {
                 printError("Seat for " + team.toUpperCase() + " is already taken.");
             } else if (e.getStatus() == 401) {
@@ -243,7 +255,6 @@ public class Repl {
                 printError("Something went wrong. Please try again.");
             }
         }
-        printSuccess("Game joined");
     }
 
     private void printSuccess(String message) {
