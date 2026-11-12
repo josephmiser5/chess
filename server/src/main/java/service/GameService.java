@@ -8,9 +8,11 @@ import dataaccess.UserDAO;
 import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
+import request.GetGameRequest;
 import request.JoinGameRequest;
 import request.ListGamesRequest;
 import result.CreateGameResult;
+import result.GetGameResult;
 import result.ListGamesResult;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
@@ -53,6 +55,18 @@ public class GameService {
         getThrowAuth(req.authToken());
         int gameID = gameDAO.createGame(req.gameName());
         return new CreateGameResult(gameID);
+    }
+
+    public GetGameResult getGame(GetGameRequest req) throws DataAccessException {
+        if (req.authToken() == null || req.gameID() == null) {
+            throw new BadRequestException();
+        }
+        getThrowAuth(req.authToken());
+        GameData gameData = gameDAO.getGame(req.gameID());
+        if (gameData == null) {
+            throw new BadRequestException();
+        }
+        return new GetGameResult(gameData);
     }
 
     public void joinGame(JoinGameRequest req) throws DataAccessException {

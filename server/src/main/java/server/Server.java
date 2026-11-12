@@ -73,7 +73,15 @@ public class Server {
             ctx.json(gson.toJson(res));
         });
 
-        javalin.post("/game", ctx -> {
+        javalin.get("/game/{gameID}", ctx -> {
+            String authToken = ctx.header("authorization");
+            int gameID = Integer.parseInt(ctx.pathParam("gameID"));
+            GetGameResult res = gameService.getGame(new GetGameRequest(authToken, gameID));
+            ctx.status(200);
+            ctx.json(gson.toJson(res));
+        });
+
+        javalin.post("/game/", ctx -> {
             String authToken = ctx.header("authorization");
             CreateGameRequest body = gson.fromJson(ctx.body(), CreateGameRequest.class);
             CreateGameRequest req = new CreateGameRequest(authToken, body.gameName());
