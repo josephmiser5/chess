@@ -51,6 +51,10 @@ public class ServerFacade {
         http.put("/game", new JoinGameRequest(authToken, team, gameID), authToken, JoinGameResult.class);
     }
 
+    public GameData getGame(int gameID) throws ResponseException {
+        return http.get("/game/" + gameID, new GetGameRequest(authToken, gameID), authToken, GetGameResult.class).game();
+    }
+
     public boolean isLoggedIn() {
         return authToken != null;
     }

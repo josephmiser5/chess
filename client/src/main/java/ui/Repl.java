@@ -241,6 +241,8 @@ public class Repl {
         }
         try {
             facade.joinGame(teamColor, gameID);
+            DrawBoard board = new DrawBoard(teamColor);
+            board.drawBoard();
             printSuccess("Game joined");
         } catch (ResponseException e) {
             if (e.getStatus() == 403) {
