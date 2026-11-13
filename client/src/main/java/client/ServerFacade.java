@@ -48,12 +48,4 @@ public class ServerFacade {
     public void joinGame(ChessGame.TeamColor team, int gameID) throws ResponseException {
         http.put("/game", new JoinGameRequest(authToken, team, gameID), authToken, JoinGameResult.class);
     }
-
-    public GameData getGame(int gameID) throws ResponseException {
-        return http.get("/game/" + gameID, new GetGameRequest(authToken, gameID), authToken, GetGameResult.class).game();
-    }
-
-    public boolean isLoggedIn() {
-        return authToken != null;
-    }
 }

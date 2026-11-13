@@ -3,11 +3,8 @@ import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
 import model.GameData;
-import result.LoginResult;
-import result.RegisterResult;
 import static ui.EscapeSequences.*;
 
-import java.net.URISyntaxException;
 import java.util.*;
 
 public class Repl {
@@ -26,79 +23,77 @@ public class Repl {
         QUIT,
     }
 
-    private void handlePreLogin(Scanner input) throws ResponseException, URISyntaxException {
+    private void handlePreLogin(Scanner input) {
         printPrompt("[LOGGED_OUT]");
-        String line = input.nextLine();
-        if (line.equalsIgnoreCase("help")) {
-            help();
-        } else if (line.startsWith("register")) {
-            String[] details = line.split(" ");
-            if (details.length != 4) {
-                printError("Please provide username, password, and email.");
-                return;
+        String[] tokens = input.nextLine().trim().split("\\s+");
+        String command = tokens[0].toLowerCase();
+        switch (command) {
+            case "help" -> help();
+            case "register" -> {
+                if (tokens.length != 4) {
+                    printError("Please provide username, password, and email.");
+                    return;
+                }
+                register(tokens[1], tokens[2], tokens[3]);
             }
-            register(details[1], details[2], details[3]);
-        } else if (line.startsWith("login")) {
-            String[] authentication =  line.split(" ");
-            if (authentication.length != 3) {
-                printError("Please provide both username and password.");
-                return;
+            case "login" -> {
+                if (tokens.length != 3) {
+                    printError("Please provide both username and password.");
+                    return;
+                }
+                login(tokens[1], tokens[2]);
             }
-            login(authentication[1], authentication[2]);
-        } else if (line.equalsIgnoreCase("exit")) {
-            state = State.QUIT;
-        } else {
-            printError("Unknown command. Type 'help' to see commands.");
+            case "exit", "quit" -> state = State.QUIT;
+            default -> printError("Unknown command. Type 'help' to see commands.");
         }
     }
 
-    private void handlePostLogin(Scanner input) throws URISyntaxException {
+    private void handlePostLogin(Scanner input) {
         printPrompt("[LOGGED_IN]");
         String[] tokens = input.nextLine().trim().split("\\s+");
         String command = tokens[0].toLowerCase();
-        if (command.equals("help")) {
-            help();
-        } else if (command.equals("logout")) {
-            logout();
-        } else if (command.equals("exit") || command.equals("quit")) {
-            state = State.QUIT;
-        } else if (command.equals("create")) {
-            if (tokens.length < 2) {
-                printError("Please provide a game name.");
-                return;
+        switch (command) {
+            case "help" -> help();
+            case "logout" -> logout();
+            case "exit", "quit" -> state = State.QUIT;
+            case "create" -> {
+                if (tokens.length < 2) {
+                    printError("Please provide a game name.");
+                    return;
+                }
+                String gameName = String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length));
+                createGame(gameName);
             }
-            String gameName = String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length));
-            createGame(gameName);
-        } else if (command.equals("list")) {
-            listGames();
-        } else if (command.equals("join")) {
-            if (tokens.length != 3) {
-                printError("Please provide a game number and a team color");
-                return;
+            case "list" -> listGames();
+            case "join" -> {
+                if (tokens.length != 3) {
+                    printError("Please provide a game number and a team color");
+                    return;
+                }
+                int gameKey;
+                try {
+                    gameKey = Integer.parseInt(tokens[1]);
+                } catch (NumberFormatException e) {
+                    printError("Game number must be a number. Type 'list' to see games.");
+                    return;
+                }
+                joinGame(gameKey, tokens[2]);
             }
-            int gameKey;
-            try {
-                gameKey = Integer.parseInt(tokens[1]);
-            } catch (NumberFormatException e) {
-                printError("Game number must be a number. Type 'list' to see games.");
-                return;
+            case "observe" -> {
+                if (tokens.length != 2) {
+                    printError("Please provide a game number.");
+                    return;
+                }
+                int gameKey;
+                try {
+                    gameKey = Integer.parseInt(tokens[1]);
+                } catch (NumberFormatException e) {
+                    printError("Game number must be a number. Type 'list' to see games.");
+                    return;
+                }
+                observeGame(gameKey);
             }
-            joinGame(gameKey, tokens[2]);
-        } else if (command.equals("observe")) {
-            if (tokens.length != 2) {
-                printError("Please provide a game number.");
-                return;
-            }
-            int gameKey;
-            try {
-                gameKey = Integer.parseInt(tokens[1]);
-            } catch (NumberFormatException e) {
-                printError("Game number must be a number. Type 'list' to see games.");
-                return;
-            }
-            observeGame(gameKey);
-        } else {
-            printError("Unknown command. Type 'help' to see commands.");
+            default -> printError("Unknown command. Type 'help' to see commands.");
         }
     }
 
