@@ -14,6 +14,11 @@ public class DrawBoard {
         this.team = team;
     }
 
+    private static String pieceColor(ChessPiece piece) {
+        return piece.getTeamColor() == ChessGame.TeamColor.WHITE ?
+                SET_TEXT_COLOR_RED : SET_TEXT_COLOR_BLUE;
+    }
+
     private static String whichPiece(ChessPiece piece) {
         String strPiece;
         switch (piece.getTeamColor()) {
@@ -50,7 +55,9 @@ public class DrawBoard {
             return false;
         }
         System.out.print(squareColor ? SET_BG_COLOR_BEIGE : SET_BG_COLOR_DARK_GREY);
+        System.out.print(pieceColor(piece));
         System.out.print(whichPiece(piece));
+        System.out.print(RESET_TEXT_COLOR);
         System.out.print(RESET_BG_COLOR);
         return true;
     }
@@ -111,7 +118,4 @@ public class DrawBoard {
             System.out.println();
         }
     }
-
-
-
 }
