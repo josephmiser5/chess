@@ -34,7 +34,7 @@ public class Repl {
         } else if (line.startsWith("register")) {
             String[] details = line.split(" ");
             if (details.length != 4) {
-                printError("Please provide both username, password, and email.");
+                printError("Please provide username, password, and email.");
                 return;
             }
             register(details[1], details[2], details[3]);
@@ -58,48 +58,42 @@ public class Repl {
         String command = tokens[0].toLowerCase();
         if (command.equals("help")) {
             help();
-        } else if (line.equalsIgnoreCase("logout")) {
+        } else if (command.equals("logout")) {
             logout();
-        } else if (line.equalsIgnoreCase("exit")) {
+        } else if (command.equals("exit") || command.equals("quit")) {
             state = State.QUIT;
-        } else if (line.startsWith("create")) {
-            String[] authentication = line.split(" ");
-            if (authentication.length < 2) {
+        } else if (command.equals("create")) {
+            if (tokens.length < 2) {
                 printError("Please provide a game name.");
                 return;
             }
-            String gameName = line.trim().substring("create".length()).trim();
-            if (gameName.isEmpty()) {
-                printError("Please provide game name.");
-            }
+            String gameName = String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length));
             createGame(gameName);
-        } else if (line.equalsIgnoreCase("list")) {
+        } else if (command.equals("list")) {
             listGames();
-        } else if (line.startsWith("join")) {
-            String[] gameDetails = line.trim().split("\\s+");
-            if (gameDetails.length != 3) {
-                printError("Please provide an game number and a team color");
+        } else if (command.equals("join")) {
+            if (tokens.length != 3) {
+                printError("Please provide a game number and a team color");
                 return;
             }
             int gameKey;
             try {
-                gameKey = Integer.parseInt(gameDetails[1]);
+                gameKey = Integer.parseInt(tokens[1]);
             } catch (NumberFormatException e) {
                 printError("Game number must be a number. Type 'list' to see games.");
                 return;
             }
-            joinGame(gameKey, gameDetails[2]);
-        } else if (line.startsWith("observe")) {
-            String[] gameDetails = line.trim().split("\\s+");
-            if (gameDetails.length != 2) {
+            joinGame(gameKey, tokens[2]);
+        } else if (command.equals("observe")) {
+            if (tokens.length != 2) {
                 printError("Please provide a game number.");
                 return;
             }
             int gameKey;
             try {
-                gameKey = Integer.parseInt(gameDetails[1]);
+                gameKey = Integer.parseInt(tokens[1]);
             } catch (NumberFormatException e) {
-                printError("Game number must be a number. Type 'list' to see game.");
+                printError("Game number must be a number. Type 'list' to see games.");
                 return;
             }
             observeGame(gameKey);
@@ -161,7 +155,7 @@ public class Repl {
             }
             return;
         }
-        printSuccess("You're logged in, lets start playing.");
+        printSuccess("You're logged in, let's start playing.");
         state = State.SIGNEDIN;
     }
 
@@ -206,6 +200,9 @@ public class Repl {
         try {
             ArrayList<GameData> games = facade.listGames();
             gameIDMap.clear();
+            if (games.isEmpty()) {
+                printSuccess("No games yet. Type 'create' to make one.");
+            }
             int number = 1;
             for (GameData game : games) {
                 String white = game.whiteUsername() == null ? "open" : game.whiteUsername();
@@ -238,6 +235,9 @@ public class Repl {
         } catch (ResponseException e) {
             if (e.getStatus() == 400) {
                 printError("Please provide a game name.");
+            } else if (e.getStatus() == 401) {
+                printError("Your session has expired. Please log in again.");
+                state = State.SIGNEDOUT;
             } else if ("Error: could not reach server".equals(e.getMessage())) {
                 printError("Could not reach server. Try again later.");
             } else {
