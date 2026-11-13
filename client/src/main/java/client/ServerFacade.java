@@ -1,20 +1,18 @@
 package client;
 
 import chess.ChessGame;
-import model.AuthData;
 import model.GameData;
 import request.*;
 import result.*;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 public class ServerFacade {
-    private final webClient http;
+    private final WebClient http;
     private String authToken;
 
     public ServerFacade(String url) {
-         http = new webClient(url);
+         http = new WebClient(url);
     }
 
     public LoginResult login(String username, String password) throws ResponseException {

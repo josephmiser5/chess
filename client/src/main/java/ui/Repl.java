@@ -47,13 +47,16 @@ public class Repl {
             login(authentication[1], authentication[2]);
         } else if (line.equalsIgnoreCase("exit")) {
             state = State.QUIT;
+        } else {
+            printError("Unknown command. Type 'help' to see commands.");
         }
     }
 
     private void handlePostLogin(Scanner input) throws URISyntaxException {
         printPrompt("[LOGGED_IN]");
-        String line = input.nextLine();
-        if (line.equalsIgnoreCase("help")) {
+        String[] tokens = input.nextLine().trim().split("\\s+");
+        String command = tokens[0].toLowerCase();
+        if (command.equals("help")) {
             help();
         } else if (line.equalsIgnoreCase("logout")) {
             logout();
@@ -65,27 +68,43 @@ public class Repl {
                 printError("Please provide a game name.");
                 return;
             }
-            StringBuilder gameName = new StringBuilder();
-            for (int i = 1; i < authentication.length; i++) {
-                gameName.append(authentication[i]).append(" ");
+            String gameName = line.trim().substring("create".length()).trim();
+            if (gameName.isEmpty()) {
+                printError("Please provide game name.");
             }
-            createGame(gameName.toString());
+            createGame(gameName);
         } else if (line.equalsIgnoreCase("list")) {
             listGames();
         } else if (line.startsWith("join")) {
             String[] gameDetails = line.trim().split("\\s+");
             if (gameDetails.length != 3) {
-                printError("Please provide an ID and a team color");
+                printError("Please provide an game number and a team color");
                 return;
             }
-            int id;
+            int gameKey;
             try {
-                id = Integer.parseInt(gameDetails[1]);
+                gameKey = Integer.parseInt(gameDetails[1]);
             } catch (NumberFormatException e) {
-                printError("ID must be a number. Type 'list' to see games.");
+                printError("Game number must be a number. Type 'list' to see games.");
                 return;
             }
-            joinGame(id, gameDetails[2]);
+            joinGame(gameKey, gameDetails[2]);
+        } else if (line.startsWith("observe")) {
+            String[] gameDetails = line.trim().split("\\s+");
+            if (gameDetails.length != 2) {
+                printError("Please provide a game number.");
+                return;
+            }
+            int gameKey;
+            try {
+                gameKey = Integer.parseInt(gameDetails[1]);
+            } catch (NumberFormatException e) {
+                printError("Game number must be a number. Type 'list' to see game.");
+                return;
+            }
+            observeGame(gameKey);
+        } else {
+            printError("Unknown command. Type 'help' to see commands.");
         }
     }
 
@@ -114,14 +133,13 @@ public class Repl {
         if (state == State.SIGNEDOUT) {
             printCommand("register", "<USERNAME> <PASSWORD> <EMAIL> - to create account");
             printCommand("login", "<USERNAME> <PASSWORD> - to login");
-            printCommand("logout", "when you are done");
             printCommand("exit", "to exit game");
             printCommand("help", "for information");
         } else if (state == State.SIGNEDIN) {
             printCommand("create", "<NAME> - a game");
             printCommand("list", "games");
-            printCommand("join", "<ID> [WHITE|BLACK] - a game");
-            printCommand("observe", "<ID> - a game");
+            printCommand("join", "<game number> [WHITE|BLACK] - a game");
+            printCommand("observe", "<game number> - a game");
             printCommand("logout", "when you are done");
             printCommand("exit", "to exit game");
             printCommand("help", "for information");
@@ -143,7 +161,7 @@ public class Repl {
             }
             return;
         }
-        printSuccess("Your logged in, lets start playing.");
+        printSuccess("You're logged in, lets start playing.");
         state = State.SIGNEDIN;
     }
 
@@ -190,16 +208,20 @@ public class Repl {
             gameIDMap.clear();
             int number = 1;
             for (GameData game : games) {
-                printSuccess("ID: " + number + ". Name: " + game.gameName() + ". " + "White: " +
-                        game.whiteUsername() + ". Black: " + game.blackUsername() + ".");
+                String white = game.whiteUsername() == null ? "open" : game.whiteUsername();
+                String black = game.blackUsername() == null ? "open" : game.blackUsername();
+                printSuccess(number + ". Name: " + game.gameName() + ". " + "White: " +
+                        white + ". Black: " + black + ".");
                 gameIDMap.put(number, game.gameID());
                 number = number + 1;
             }
         } catch (ResponseException e) {
             if (e.getStatus() == 401) {
                 printError("Your session has expired. Please log in again.");
+                state = State.SIGNEDOUT;
             } else if (e.getStatus() == 400) {
                 printError("Something went wrong. Please log in again.");
+                state = State.SIGNEDOUT;
             } else if ("Error: could not reach server".equals(e.getMessage())) {
                 printError("Could not reach server. Try again later.");
             } else {
@@ -224,13 +246,23 @@ public class Repl {
         }
     }
 
-    public void joinGame(int id, String team) {
-        ChessGame.TeamColor teamColor;
-        if (!gameIDMap.containsKey(id)) {
+    public void observeGame(int gameKey) {
+        if (!gameIDMap.containsKey(gameKey)) {
             printError("Game does not exist. Type 'list' to see games.");
             return;
         }
-        int gameID = gameIDMap.get(id);
+        int gameID = gameIDMap.get(gameKey);
+        DrawBoard board = new DrawBoard(ChessGame.TeamColor.WHITE);
+        board.drawBoard();
+    }
+
+    public void joinGame(int gameKey, String team) {
+        ChessGame.TeamColor teamColor;
+        if (!gameIDMap.containsKey(gameKey)) {
+            printError("Game does not exist. Type 'list' to see games.");
+            return;
+        }
+        int gameID = gameIDMap.get(gameKey);
         if (team.equalsIgnoreCase("white")) {
             teamColor = ChessGame.TeamColor.WHITE;
         } else if (team.equalsIgnoreCase("black")) {
@@ -249,8 +281,9 @@ public class Repl {
                 printError("Seat for " + team.toUpperCase() + " is already taken.");
             } else if (e.getStatus() == 401) {
                 printError("Your session has expired. Please log in again.");
+                state = State.SIGNEDOUT;
             } else if (e.getStatus() == 400) {
-                printError("Please enter ID, and team color. If that does not work, the game may not exist.");
+                printError("Please enter a game number and team color. If that does not work, the game may not exist.");
             } else if ("Error: could not reach server".equals(e.getMessage())) {
                 printError("Could not reach server. Try again later.");
             } else {

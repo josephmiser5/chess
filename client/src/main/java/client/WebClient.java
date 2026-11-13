@@ -8,12 +8,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class webClient {
+public class WebClient {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Gson gson = new Gson();
     private final String baseUrl;
 
-    public webClient(String baseUrl) {
+    public WebClient(String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
