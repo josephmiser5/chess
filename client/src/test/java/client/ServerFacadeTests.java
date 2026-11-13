@@ -1,12 +1,10 @@
 package client;
 
 import chess.ChessGame;
-import model.GameData;
 import org.junit.jupiter.api.*;
 import result.LoginResult;
 import result.RegisterResult;
 import server.Server;
-import service.exception.BadRequestException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServerFacadeTests {
     private static ServerFacade facade;
     private static Server server;
-    private static final String username = "joseph";
-    private static final String password = "password";
-    private static final String email = "email";
+    private static final String USERNAME = "joseph";
+    private static final String PASSWORD = "password";
+    private static final String EMAIL = "email";
     private static RegisterResult res;
 
     @BeforeAll
@@ -34,14 +32,14 @@ public class ServerFacadeTests {
     @BeforeEach
     public void setUp() throws ResponseException {
         facade.clear();
-        res = facade.register(username, password, email);
+        res = facade.register(USERNAME, PASSWORD, EMAIL);
     }
 
     @Test
     @DisplayName("login succeeds")
     public void loginPositive() throws ResponseException {
-        LoginResult res = facade.login(username, password);
-        assertEquals(username, res.username());
+        LoginResult res = facade.login(USERNAME, PASSWORD);
+        assertEquals(USERNAME, res.username());
         assertNotNull(res.authToken());
     }
 
@@ -49,11 +47,11 @@ public class ServerFacadeTests {
     @DisplayName("login fails")
     public void loginNegative() throws ResponseException {
         ResponseException wrongPassword = assertThrows(ResponseException.class, () -> {
-            facade.login(username, "incorrect_password");
+            facade.login(USERNAME, "incorrect_password");
         });
         assertEquals(401, wrongPassword.getStatus());
         ResponseException noPassword = assertThrows(ResponseException.class, () -> {
-            facade.login(username, null);
+            facade.login(USERNAME, null);
         });
         assertEquals(400, noPassword.getStatus());
     }
@@ -61,7 +59,7 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("register succeeds")
     public void registerPositive() throws ResponseException {
-        assertEquals(username, res.username());
+        assertEquals(USERNAME, res.username());
         assertNotNull(res.authToken());
     }
 
@@ -69,7 +67,7 @@ public class ServerFacadeTests {
     @DisplayName("register fails")
     public void registerNegative() throws ResponseException {
         ResponseException alreadyExists = assertThrows(ResponseException.class, () -> {
-            facade.register(username, password, email);
+            facade.register(USERNAME, PASSWORD, EMAIL);
         });
         assertEquals(403, alreadyExists.getStatus());
     }
@@ -96,7 +94,7 @@ public class ServerFacadeTests {
         String gameName = "fun game";
         facade.createGame(gameName);
         facade.joinGame(ChessGame.TeamColor.WHITE, 1);
-        assertEquals(username, facade.listGames().getFirst().whiteUsername());
+        assertEquals(USERNAME, facade.listGames().getFirst().whiteUsername());
     }
 
     @Test
@@ -127,7 +125,7 @@ public class ServerFacadeTests {
     public void clear() throws ResponseException {
         facade.clear();
         assertThrows(ResponseException.class, () -> {
-            facade.login(username, password);
+            facade.login(USERNAME, PASSWORD);
         });
     }
 }

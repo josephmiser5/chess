@@ -57,18 +57,6 @@ public class GameService {
         return new CreateGameResult(gameID);
     }
 
-    public GetGameResult getGame(GetGameRequest req) throws DataAccessException {
-        if (req.authToken() == null || req.gameID() == null) {
-            throw new BadRequestException();
-        }
-        getThrowAuth(req.authToken());
-        GameData gameData = gameDAO.getGame(req.gameID());
-        if (gameData == null) {
-            throw new BadRequestException();
-        }
-        return new GetGameResult(gameData);
-    }
-
     public void joinGame(JoinGameRequest req) throws DataAccessException {
         if (req.authToken() == null || req.gameID() == null || req.playerColor() == null) {
             throw new BadRequestException();

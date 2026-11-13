@@ -9,8 +9,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class WebClient {
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
-    private static final Gson gson = new Gson();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static final Gson GSON = new Gson();
     private final String baseUrl;
 
     public WebClient(String baseUrl) {
@@ -38,7 +38,7 @@ public class WebClient {
         try {
             var bodyPublisher = (body == null)
                     ?HttpRequest.BodyPublishers.noBody()
-                    :HttpRequest.BodyPublishers.ofString(gson.toJson(body));
+                    :HttpRequest.BodyPublishers.ofString(GSON.toJson(body));
 
             var httpRequest = HttpRequest.newBuilder()
                     .uri(new URI(baseUrl + path))
@@ -52,7 +52,7 @@ public class WebClient {
                 httpRequest.header("authorization", authToken);
             }
 
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest.build(), HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> httpResponse = HTTP_CLIENT.send(httpRequest.build(), HttpResponse.BodyHandlers.ofString());
 
             int status = httpResponse.statusCode();
             if (status < 200 || status >= 300) {
@@ -62,7 +62,7 @@ public class WebClient {
             if (responseClass == null || httpResponse.body().isEmpty()) {
                 return null;
             }
-            return gson.fromJson(httpResponse.body(), responseClass);
+            return GSON.fromJson(httpResponse.body(), responseClass);
 
         } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new ResponseException(500, "Error: could not reach server");
@@ -70,7 +70,7 @@ public class WebClient {
     }
     private String message(String body) {
         try {
-            var map = gson.fromJson(body, java.util.Map.class);
+            var map = GSON.fromJson(body, java.util.Map.class);
             return (String) map.get("message");
         } catch (Exception e) {
             return body;
