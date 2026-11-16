@@ -17,6 +17,8 @@ import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Error;
+import websocket.messages.LoadGame;
 import websocket.messages.ServerMessage;
 
 import java.util.Map;
@@ -110,10 +112,17 @@ public class Server {
                     UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
                     LoadGame res;
                     try {
-                        res = gamePlay.connect(command, ctx);
-                        ctx.send(gson.toJson(res));
+                        switch (command.getCommandType()) {
+                            case CONNECT -> {
+                                res = gamePlay.connect(command, ctx);
+                                ctx.send(gson.toJson(res));
+                            }
+                            case MAKE_MOVE -> {}
+                            case LEAVE -> {}
+                            case RESIGN -> {}
+                        }
                     } catch (UnauthorizedException | BadRequestException e) {
-                        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+                        ServerMessage message = new Error(e.getMessage());
                         ctx.send(gson.toJson(message));
                         return;
                     }

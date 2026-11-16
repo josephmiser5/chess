@@ -7,11 +7,10 @@ import io.javalin.websocket.WsContext;
 import model.AuthData;
 import model.GameData;
 import model.UserSession;
-import result.LoadGame;
+import websocket.messages.LoadGame;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ServerMessage;
 
 import java.util.concurrent.ConcurrentHashMap;
 
