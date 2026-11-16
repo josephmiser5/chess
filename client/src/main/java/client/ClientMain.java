@@ -7,8 +7,8 @@ import java.net.URISyntaxException;
 
 public class ClientMain {
     public static void main(String[] args) throws ResponseException, URISyntaxException {
-        var facade = new ServerFacade("http://localhost:8080");
-        Repl repl = new Repl(facade);
+        String url = "http://localhost:8080";
+        Repl repl = new Repl(url);
         repl.run();
     }
 }

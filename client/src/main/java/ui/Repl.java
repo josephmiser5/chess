@@ -2,7 +2,10 @@ package ui;
 import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
+import client.ServerMessageObserver;
 import model.GameData;
+import websocket.messages.ServerMessage;
+
 import static ui.EscapeSequences.*;
 
 import java.util.*;
@@ -11,15 +14,19 @@ public class Repl {
     private final ServerFacade facade;
     private State state = State.SIGNEDOUT;
     private HashMap<Integer, Integer> gameIDMap;
+    private GameHandler gameHandler;
+    private ServerMessageObserver observer = new ServerMessageObserver();
 
-    public Repl(ServerFacade facade) {
-        this.facade = facade;
+    public Repl(String url) {
+        this.facade = new ServerFacade(url, this);
+        this.gameHandler = new GameHandler(facade);
         gameIDMap = new HashMap<>();
     }
 
     private enum State {
         SIGNEDOUT,
         SIGNEDIN,
+        INGAME,
         QUIT,
     }
 
@@ -97,6 +104,17 @@ public class Repl {
         }
     }
 
+    private void handleInGame(Scanner input) {
+        printPrompt("[IN_GAME]");
+        String[] tokens = input.nextLine().trim().split("\\s+");
+        String command = tokens[0].toLowerCase();
+
+        switch (command) {
+            case "help" -> help();
+            case "move" -> gameHandler.move();
+        }
+    }
+
 
     public void run() {
         System.out.print(ERASE_SCREEN);
@@ -109,6 +127,8 @@ public class Repl {
                     handlePreLogin(input);
                 } else if (state.equals(State.SIGNEDIN)) {
                     handlePostLogin(input);
+                } else if (state.equals(State.INGAME)) {
+                    handleInGame(input);
                 }
             } catch (NoSuchElementException e) {
                 state = State.QUIT;
@@ -132,6 +152,13 @@ public class Repl {
             printCommand("logout", "when you are done");
             printCommand("exit", "to exit game");
             printCommand("help", "for information");
+        } else if (state == State.INGAME) {
+            printCommand("help", "for information");
+            printCommand("redraw", "to redraw chessboard");
+            printCommand("leave", "to leave game");
+            printCommand("move", "<piece> <square> - example: move N e4 moves knight to e4");
+            printCommand("resign", "to resign");
+            printCommand("legal moves", "<piece> - to highlight legal moves for a piece. Example: legal moves Q.");
         }
     }
 
@@ -248,6 +275,7 @@ public class Repl {
         }
         int gameID = gameIDMap.get(gameKey);
         DrawBoard board = new DrawBoard(ChessGame.TeamColor.WHITE);
+        state = State.INGAME;
         board.drawBoard();
     }
 
@@ -269,6 +297,7 @@ public class Repl {
         try {
             facade.joinGame(teamColor, gameID);
             DrawBoard board = new DrawBoard(teamColor);
+            state = State.INGAME;
             board.drawBoard();
             printSuccess("Game joined");
         } catch (ResponseException e) {

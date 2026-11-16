@@ -4,15 +4,19 @@ import chess.ChessGame;
 import model.GameData;
 import request.*;
 import result.*;
+import ui.Repl;
 
 import java.util.ArrayList;
 
 public class ServerFacade {
     private final WebClient http;
     private String authToken;
+    private WebsocketCommunicator websocketCommunicator;
+    private Repl chessClient;
 
-    public ServerFacade(String url) {
+    public ServerFacade(String url, Repl chessClient) {
          http = new WebClient(url);
+         this.chessClient = chessClient;
     }
 
     public LoginResult login(String username, String password) throws ResponseException {
@@ -47,5 +51,15 @@ public class ServerFacade {
 
     public void joinGame(ChessGame.TeamColor team, int gameID) throws ResponseException {
         http.put("/game", new JoinGameRequest(authToken, team, gameID), authToken, JoinGameResult.class);
+        try {
+            connectUser(gameID);
+        } catch (Exception e) {
+            throw new ResponseException(500,e.getMessage());
+        }
     }
+
+    public void connectUser(int gameID) throws Exception {
+        websocketCommunicator = new WebsocketCommunicator(chessClient);
+    }
+
 }
