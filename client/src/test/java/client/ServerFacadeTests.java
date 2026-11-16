@@ -5,6 +5,7 @@ import org.junit.jupiter.api.*;
 import result.LoginResult;
 import result.RegisterResult;
 import server.Server;
+import ui.Repl;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -4,7 +4,6 @@ import chess.ChessGame;
 import model.GameData;
 import request.*;
 import result.*;
-import ui.Repl;
 
 import java.util.ArrayList;
 
@@ -12,11 +11,13 @@ public class ServerFacade {
     private final WebClient http;
     private String authToken;
     private WebsocketCommunicator websocketCommunicator;
-    private Repl chessClient;
+    String port;
+    ServerMessageObserver client;
 
-    public ServerFacade(String url, Repl chessClient) {
+    public ServerFacade(String url, String port, ServerMessageObserver client) {
          http = new WebClient(url);
-         this.chessClient = chessClient;
+         this.port = port;
+         this.client = client;
     }
 
     public LoginResult login(String username, String password) throws ResponseException {
@@ -59,7 +60,7 @@ public class ServerFacade {
     }
 
     public void connectUser(int gameID) throws Exception {
-        websocketCommunicator = new WebsocketCommunicator(chessClient);
+        websocketCommunicator = new WebsocketCommunicator(port, client);
     }
 
 }

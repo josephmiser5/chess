@@ -1,4 +1,7 @@
 package client;
 
-public class ServerMessageObserver {
+import websocket.messages.ServerMessage;
+
+public interface ServerMessageObserver {
+    public void notify(ServerMessage message);
 }

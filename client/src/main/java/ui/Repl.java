@@ -10,17 +10,21 @@ import static ui.EscapeSequences.*;
 
 import java.util.*;
 
-public class Repl {
+public class Repl implements ServerMessageObserver {
     private final ServerFacade facade;
     private State state = State.SIGNEDOUT;
     private HashMap<Integer, Integer> gameIDMap;
     private GameHandler gameHandler;
-    private ServerMessageObserver observer = new ServerMessageObserver();
 
-    public Repl(String url) {
-        this.facade = new ServerFacade(url, this);
+    public Repl(String url, String port) {
+        this.facade = new ServerFacade(url, port, this);
         this.gameHandler = new GameHandler(facade);
         gameIDMap = new HashMap<>();
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+
     }
 
     private enum State {

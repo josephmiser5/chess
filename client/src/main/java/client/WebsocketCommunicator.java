@@ -1,6 +1,5 @@
 package client;
 import jakarta.websocket.*;
-import ui.Repl;
 
 import java.net.URI;
 import java.util.Scanner;
@@ -16,11 +15,9 @@ public class WebsocketCommunicator extends Endpoint {
     //    }
     //}
 
-    public Repl chessClient;
     public Session session;
-    public WebsocketCommunicator(Repl chessClient) throws Exception {
-        this.chessClient = chessClient;
-        URI uri = new URI("ws://localhost:8080/ws");
+    public WebsocketCommunicator(String port, ServerMessageObserver client) throws Exception {
+        URI uri = new URI("ws://" + port + "/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);
     }
