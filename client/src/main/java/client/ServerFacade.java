@@ -4,13 +4,14 @@ import chess.ChessGame;
 import model.GameData;
 import request.*;
 import result.*;
+import websocket.commands.UserGameCommand;
 
 import java.util.ArrayList;
 
 public class ServerFacade {
     private final WebClient http;
     private String authToken;
-    private WebsocketCommunicator websocketCommunicator;
+    private WebsocketCommunicator ws;
     String port;
     ServerMessageObserver client;
 
@@ -60,7 +61,8 @@ public class ServerFacade {
     }
 
     public void connectUser(int gameID) throws Exception {
-        websocketCommunicator = new WebsocketCommunicator(port, client);
+        ws = new WebsocketCommunicator(port, client);
+        ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
     }
 
 }

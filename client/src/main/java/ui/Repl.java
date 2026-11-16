@@ -300,8 +300,8 @@ public class Repl implements ServerMessageObserver {
         }
         try {
             facade.joinGame(teamColor, gameID);
-            DrawBoard board = new DrawBoard(teamColor);
             state = State.INGAME;
+            DrawBoard board = new DrawBoard(teamColor);
             board.drawBoard();
             printSuccess("Game joined");
         } catch (ResponseException e) {

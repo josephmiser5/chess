@@ -10,6 +10,7 @@ import io.javalin.*;
 import request.*;
 import result.*;
 import service.ClearService;
+import service.GamePlay;
 import service.GameService;
 import service.UserService;
 import service.exception.AlreadyTakenException;
@@ -41,6 +42,7 @@ public class Server {
         UserService userService = new UserService(userDAO, authDAO);
         GameService gameService = new GameService(userDAO, authDAO, gameDAO);
         ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
+        GamePlay gamePlay = new GamePlay(authDAO, gameDAO);
 
         Gson gson = new Gson();
 
