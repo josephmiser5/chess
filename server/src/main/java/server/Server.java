@@ -16,6 +16,8 @@ import service.UserService;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.util.Map;
 
@@ -104,7 +106,19 @@ public class Server {
                 ctx.enableAutomaticPings();
                 System.out.println("WebSocket connected");
             });
-            ws.onMessage(ctx -> ctx.send("Websocket response: " + ctx.message()));
+            ws.onMessage(ctx -> {
+                    UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
+                    LoadGame res;
+                    try {
+                        res = gamePlay.connect(command, ctx);
+                        ctx.send(gson.toJson(res));
+                    } catch (UnauthorizedException | BadRequestException e) {
+                        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR, e.getMessage());
+                        ctx.send(gson.toJson(message));
+                        return;
+                    }
+                ctx.send("Websocket response: " + ctx.message());
+                    });
             ws.onClose(ctx -> System.out.println("Websocket closed"));
         });
 
