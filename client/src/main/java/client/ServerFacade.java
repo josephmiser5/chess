@@ -60,9 +60,20 @@ public class ServerFacade {
         }
     }
 
+    public void observeGame(int gameID) throws ResponseException {
+        try {
+            connectUser(gameID);
+        } catch (Exception e) {
+            throw new ResponseException(500, e.getMessage());
+        }
+    }
+
     public void connectUser(int gameID) throws Exception {
         ws = new WebsocketCommunicator(port, client);
         ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
     }
 
+    public void move(int gameID) throws Exception {
+        ws.send(new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID));
+    }
 }

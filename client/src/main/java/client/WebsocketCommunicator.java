@@ -2,6 +2,7 @@ package client;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Error;
 import websocket.messages.LoadGame;
 import websocket.messages.ServerMessage;
 
@@ -34,6 +35,10 @@ public class WebsocketCommunicator extends Endpoint {
                     case LOAD_GAME -> {
                         LoadGame game = gson.fromJson(message, LoadGame.class);
                         client.notify(game);
+                    }
+                    case ERROR -> {
+                        Error error = gson.fromJson(message, Error.class);
+                        client.notify(error);
                     }
                 }
             }

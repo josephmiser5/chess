@@ -4,6 +4,7 @@ import client.ResponseException;
 import client.ServerFacade;
 import client.ServerMessageObserver;
 import model.GameData;
+import websocket.messages.Error;
 import websocket.messages.LoadGame;
 import websocket.messages.ServerMessage;
 
@@ -33,6 +34,11 @@ public class Repl implements ServerMessageObserver {
                 game = updatedGame.getGame();
                 DrawBoard board = new DrawBoard(teamColor, game);
                 board.drawBoard();
+                printPrompt("[IN_GAME]");
+            }
+            case ERROR -> {
+                Error error = (Error) message;
+                printError(error.getMessage());
             }
         }
     }
@@ -119,13 +125,14 @@ public class Repl implements ServerMessageObserver {
     }
 
     private void handleInGame(Scanner input) {
-        printPrompt("[IN_GAME]");
-        System.out.println("\n");
         String[] tokens = input.nextLine().trim().split("\\s+");
         String command = tokens[0].toLowerCase();
 
         switch (command) {
-            case "help" -> help();
+            case "help" -> {
+                help();
+                printPrompt("[IN_GAME]");
+            }
             case "move" -> gameHandler.move();
         }
     }
@@ -289,9 +296,24 @@ public class Repl implements ServerMessageObserver {
             return;
         }
         int gameID = gameIDMap.get(gameKey);
-        //DrawBoard board = new DrawBoard(ChessGame.TeamColor.WHITE, game);
-        //board.drawBoard();
-        state = State.INGAME;
+        try {
+            this.teamColor = ChessGame.TeamColor.WHITE;
+            facade.observeGame(gameID);
+            state = State.INGAME;
+        } catch (ResponseException e) {
+            switch (e.getStatus()) {
+                case 403 -> {
+                    printError("Your session has expired. Please log in again.");
+                    state = State.SIGNEDOUT;
+                }
+                case 400 -> printError("Please enter a game number. If that does not work game may not exist.");
+            }
+            if ("Error: could not reach server".equals(e.getMessage())) {
+                printError("Could not reach server. Try again later.");
+            } else {
+                printError("Something went wrong. Please try again.");
+            }
+        }
     }
 
     public void joinGame(int gameKey, String team) {
