@@ -110,16 +110,16 @@ public class Server {
             });
             ws.onMessage(ctx -> {
                     UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
-                    LoadGame res;
                     try {
                         switch (command.getCommandType()) {
                             case CONNECT -> {
-                                res = gamePlay.connect(command, ctx);
+                                LoadGame res = gamePlay.connect(command, ctx);
                                 ctx.send(gson.toJson(res));
+                                return;
                             }
-                            case MAKE_MOVE -> {}
-                            case LEAVE -> {}
-                            case RESIGN -> {}
+                            case MAKE_MOVE -> {return;}
+                            case LEAVE -> {return;}
+                            case RESIGN -> {return;}
                         }
                     } catch (UnauthorizedException | BadRequestException e) {
                         ServerMessage message = new Error(e.getMessage());

@@ -7,11 +7,12 @@ import static ui.EscapeSequences.*;
 
 public class DrawBoard {
 
-    ChessGame game = new ChessGame();
+    ChessGame game;
     ChessGame.TeamColor team;
 
-    public DrawBoard(ChessGame.TeamColor team) {
+    public DrawBoard(ChessGame.TeamColor team, ChessGame game) {
         this.team = team;
+        this.game = game;
     }
 
     private static String pieceColor(ChessPiece piece) {

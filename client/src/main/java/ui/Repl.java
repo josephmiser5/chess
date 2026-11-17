@@ -4,6 +4,7 @@ import client.ResponseException;
 import client.ServerFacade;
 import client.ServerMessageObserver;
 import model.GameData;
+import websocket.messages.LoadGame;
 import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
@@ -15,6 +16,8 @@ public class Repl implements ServerMessageObserver {
     private State state = State.SIGNEDOUT;
     private HashMap<Integer, Integer> gameIDMap;
     private GameHandler gameHandler;
+    public ChessGame game;
+    public ChessGame.TeamColor teamColor;
 
     public Repl(String url, String port) {
         this.facade = new ServerFacade(url, port, this);
@@ -24,7 +27,14 @@ public class Repl implements ServerMessageObserver {
 
     @Override
     public void notify(ServerMessage message) {
-
+        switch (message.getServerMessageType()) {
+            case LOAD_GAME -> {
+                LoadGame updatedGame = (LoadGame) message;
+                game = updatedGame.getGame();
+                DrawBoard board = new DrawBoard(teamColor, game);
+                board.drawBoard();
+            }
+        }
     }
 
     private enum State {
@@ -110,6 +120,7 @@ public class Repl implements ServerMessageObserver {
 
     private void handleInGame(Scanner input) {
         printPrompt("[IN_GAME]");
+        System.out.println("\n");
         String[] tokens = input.nextLine().trim().split("\\s+");
         String command = tokens[0].toLowerCase();
 
@@ -278,9 +289,9 @@ public class Repl implements ServerMessageObserver {
             return;
         }
         int gameID = gameIDMap.get(gameKey);
-        DrawBoard board = new DrawBoard(ChessGame.TeamColor.WHITE);
+        //DrawBoard board = new DrawBoard(ChessGame.TeamColor.WHITE, game);
+        //board.drawBoard();
         state = State.INGAME;
-        board.drawBoard();
     }
 
     public void joinGame(int gameKey, String team) {
@@ -299,10 +310,9 @@ public class Repl implements ServerMessageObserver {
             return;
         }
         try {
+            this.teamColor = teamColor;
             facade.joinGame(teamColor, gameID);
             state = State.INGAME;
-            DrawBoard board = new DrawBoard(teamColor);
-            board.drawBoard();
             printSuccess("Game joined");
         } catch (ResponseException e) {
             if (e.getStatus() == 403) {
