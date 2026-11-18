@@ -19,6 +19,7 @@ public class Repl implements ServerMessageObserver {
     private GameHandler gameHandler;
     public ChessGame game;
     public ChessGame.TeamColor teamColor;
+    private int gameID;
 
     public Repl(String url, String port) {
         this.facade = new ServerFacade(url, port, this);
@@ -133,7 +134,9 @@ public class Repl implements ServerMessageObserver {
                 help();
                 printPrompt("[IN_GAME]");
             }
-            case "move" -> gameHandler.move();
+            case "move" -> {
+                gameHandler.move(gameID);
+            }
         }
     }
 
@@ -300,6 +303,7 @@ public class Repl implements ServerMessageObserver {
             this.teamColor = ChessGame.TeamColor.WHITE;
             facade.observeGame(gameID);
             state = State.INGAME;
+            this.gameID = gameID;
         } catch (ResponseException e) {
             switch (e.getStatus()) {
                 case 403 -> {
@@ -335,6 +339,7 @@ public class Repl implements ServerMessageObserver {
             this.teamColor = teamColor;
             facade.joinGame(teamColor, gameID);
             state = State.INGAME;
+            this.gameID = gameID;
             printSuccess("Game joined");
         } catch (ResponseException e) {
             if (e.getStatus() == 403) {

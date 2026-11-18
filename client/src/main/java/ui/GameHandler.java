@@ -10,8 +10,12 @@ public class GameHandler {
         this.facade = facade;
     }
 
-    public void move() {
-
+    public void move(int gameID) {
+        try {
+            facade.move(gameID);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
