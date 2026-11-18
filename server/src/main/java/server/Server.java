@@ -109,12 +109,12 @@ public class Server {
                 System.out.println("WebSocket connected");
             });
             ws.onMessage(ctx -> {
-                    UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
                     try {
+                        UserGameCommand command = gson.fromJson(ctx.message(), UserGameCommand.class);
+                        System.out.println("fails here");
                         switch (command.getCommandType()) {
                             case CONNECT -> {
-                                LoadGame res = gamePlay.connect(command, ctx);
-                                ctx.send(gson.toJson(res));
+                                gamePlay.connect(command, ctx);
                                 return;
                             }
                             case MAKE_MOVE -> {return;}
@@ -125,10 +125,16 @@ public class Server {
                         ServerMessage message = new Error(e.getMessage());
                         ctx.send(gson.toJson(message));
                         return;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ServerMessage message = new Error(e.getMessage());
+                        ctx.send(gson.toJson(message));
                     }
                 ctx.send("Websocket response: " + ctx.message());
                     });
-            ws.onClose(ctx -> System.out.println("Websocket closed"));
+            ws.onClose(ctx -> {
+                System.out.println("Websocket closed");
+            });
         });
 
         javalin.exception(BadRequestException.class, (e, ctx) -> {

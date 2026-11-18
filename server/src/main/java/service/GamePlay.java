@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
@@ -16,6 +17,7 @@ import websocket.commands.UserGameCommand;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GamePlay {
+    Gson gson = new Gson();
     AuthDAO authDAO;
     GameDAO gameDAO;
     ConcurrentHashMap<Integer, ConcurrentHashMap<String, UserSession>> connections = new ConcurrentHashMap<>();
@@ -25,7 +27,11 @@ public class GamePlay {
         this.gameDAO = gameDAO;
     }
 
-    public LoadGame connect(UserGameCommand command, WsContext ctx) throws DataAccessException {
+   public void removeConnection(int gameID, WsContext ctx) {
+        connections.get(gameID).remove(ctx.sessionId());
+   }
+
+    public void connect(UserGameCommand command, WsContext ctx) throws DataAccessException {
         AuthData authData = authDAO.getAuth(command.getAuthToken());
         if (authData == null) {
             throw new UnauthorizedException();
@@ -36,7 +42,11 @@ public class GamePlay {
         }
         connections.computeIfAbsent(command.getGameID(), id ->
             new ConcurrentHashMap<>()).put(ctx.sessionId(), new UserSession(authData.username(), ctx));
-        return new LoadGame(gameData.game());
+        ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
+        String message = gson.toJson(new LoadGame(gameData.game()));
+        sessions.values().forEach((value) -> {
+            value.ctx().send(message);
+        });
     }
 
     public void move(UserGameCommand command, WsContext ctx) throws Exception {
@@ -60,5 +70,3 @@ public class GamePlay {
             }
         }
     }
-
-}

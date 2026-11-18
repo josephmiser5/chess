@@ -30,7 +30,6 @@ public class WebsocketCommunicator extends Endpoint {
         session.addMessageHandler(new MessageHandler.Whole<String>() {
             public void onMessage(String message) {
                 ServerMessage.ServerMessageType type = gson.fromJson(message, ServerMessage.class).getServerMessageType();
-
                 switch (type) {
                     case LOAD_GAME -> {
                         LoadGame game = gson.fromJson(message, LoadGame.class);
