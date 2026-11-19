@@ -14,6 +14,7 @@ import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
 import websocket.commands.UserGameCommand;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GamePlay {
@@ -43,9 +44,18 @@ public class GamePlay {
         connections.computeIfAbsent(command.getGameID(), id ->
             new ConcurrentHashMap<>()).put(ctx.sessionId(), new UserSession(authData.username(), ctx));
         ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
+        notify(sessions, gameData, ctx);
         String message = gson.toJson(new LoadGame(gameData.game()));
-        sessions.values().forEach((value) -> {
-            value.ctx().send(message);
+        ctx.send(message);
+    }
+
+    public void notify(ConcurrentHashMap<String, UserSession> sessions, GameData gameData, WsContext ctx) {
+        String whiteUsername = gameData.whiteUsername();
+        String blackUsername = gameData.blackUsername();
+        String username = sessions.get(ctx.sessionId()).username();
+
+        sessions.values().forEach(values -> {
+
         });
     }
 
