@@ -1,6 +1,9 @@
 package ui;
 
+import chess.ChessMove;
+import chess.ChessPosition;
 import client.ServerFacade;
+import static ui.PrintStyles.*;
 
 public class GameHandler {
 
@@ -10,12 +13,43 @@ public class GameHandler {
         this.facade = facade;
     }
 
-    public void move(int gameID) {
+    public void move(int gameID, String[] tokens) {
+        ChessMove move;
         try {
-            facade.move(gameID);
+            move = parse(tokens);
+        } catch (Exception e) {
+            return;
+        }
+        try {
+            facade.move(gameID, move);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private ChessMove parse(String[] tokens) throws Exception {
+        if (tokens.length != 3) {
+            printError("Please enter a starting and ending square. Example: move e1 e2");
+            throw new Exception("Invalid move syntax.");
+        }
+        String[] start = tokens[1].split("");
+        String[] end = tokens[2].split("");
+        int startRow;
+        int endRow;
+        try {
+            startRow = Integer.parseInt(start[1]);
+            endRow = Integer.parseInt(end[1]);
+        } catch (NumberFormatException e) {
+            printError("Row number must be entered after column letter. Example: move e1 e2");
+            throw new Exception("Invalid column entry.");
+        }
+        int startCol = start[0].charAt(0) - 'a';
+        int endCol = end[0].charAt(0) - 'a';
+        if (startCol > 8 || startCol < 1 || endCol > 8 || endCol < 1) {
+            printError("Column letters must be a-h. Example: move a1 g1");
+            throw new Exception("Invalid row entry.");
+        }
+        return new ChessMove(new ChessPosition(startRow, startCol),
+                new ChessPosition(endRow, endCol), null);
+    }
 }

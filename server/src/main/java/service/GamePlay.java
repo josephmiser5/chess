@@ -46,8 +46,8 @@ public class GamePlay {
             new ConcurrentHashMap<>()).put(ctx.sessionId(), new UserSession(authData.username(), ctx));
         ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
         String message = gson.toJson(new LoadGame(gameData.game()));
-        ctx.send(message);
         notify(sessions, gameData, ctx);
+        ctx.send(message);
     }
 
     public void notify(ConcurrentHashMap<String, UserSession> sessions, GameData gameData, WsContext ctx) {
@@ -82,15 +82,21 @@ public class GamePlay {
         if (gameData == null) {
             throw new BadRequestException();
         }
+        if (!authData.username().equals(gameData.whiteUsername()) && !authData.username().equals(gameData.blackUsername())) {
+            throw new Exception("You are not a player.");
+        }
         switch (gameData.game().getTeamTurn()) {
             case WHITE -> {
                 if (!gameData.whiteUsername().equals(authData.username())) {
-                    if (gameData.blackUsername().equals(authData.username())) {
-                        throw new Exception("It's " + gameData.whiteUsername() + "'s turn.");
-                    }
-                    throw new Exception("You are not a player.");
-                    }
+                    throw new Exception("It's " + gameData.whiteUsername() + "'s turn.");
                 }
+                }
+            case BLACK -> {
+                if (!gameData.blackUsername().equals(authData.username())) {
+                    throw new Exception("It's " + gameData.blackUsername() + "'s turn.");
+                }
+            }
+            case null, default -> throw new Exception("Something went wrong, please try again.");
             }
         }
     }

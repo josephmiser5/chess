@@ -8,6 +8,7 @@ import websocket.messages.Error;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
+import static ui.PrintStyles.*;
 
 import static ui.EscapeSequences.*;
 
@@ -140,7 +141,7 @@ public class Repl implements ServerMessageObserver {
                 printPrompt("[IN_GAME]");
             }
             case "move" -> {
-                gameHandler.move(gameID);
+                gameHandler.move(gameID, tokens);
             }
         }
     }
@@ -360,23 +361,5 @@ public class Repl implements ServerMessageObserver {
                 printError("Something went wrong. Please try again.");
             }
         }
-    }
-
-    private void printSuccess(String message) {
-        System.out.println(SET_TEXT_COLOR_GREEN + message + RESET_TEXT_COLOR);
-    }
-
-    private void printError(String message) {
-        System.out.println(SET_TEXT_COLOR_RED + message + RESET_TEXT_COLOR);
-    }
-
-    private void printPrompt(String prompt) {
-        System.out.print(SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + prompt
-                + RESET_TEXT_BOLD_FAINT + RESET_TEXT_COLOR + " >>> ");
-    }
-
-    private void printCommand(String command, String description) {
-        System.out.println(SET_TEXT_COLOR_YELLOW + command
-        + SET_TEXT_COLOR_LIGHT_GREY + " - " + description + RESET_TEXT_COLOR);
     }
 }

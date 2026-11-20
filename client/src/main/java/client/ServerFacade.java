@@ -1,9 +1,11 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import model.GameData;
 import request.*;
 import result.*;
+import websocket.commands.MakeMove;
 import websocket.commands.UserGameCommand;
 
 import java.util.ArrayList;
@@ -73,7 +75,7 @@ public class ServerFacade {
         ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
     }
 
-    public void move(int gameID) throws Exception {
-        ws.send(new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID));
+    public void move(int gameID, ChessMove move) throws Exception {
+        ws.send(new MakeMove(authToken, gameID, move));
     }
 }

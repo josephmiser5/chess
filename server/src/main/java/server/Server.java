@@ -117,7 +117,10 @@ public class Server {
                                 gamePlay.connect(command, ctx);
                                 return;
                             }
-                            case MAKE_MOVE -> {return;}
+                            case MAKE_MOVE -> {
+                                gamePlay.move(command, ctx);
+                                return;
+                            }
                             case LEAVE -> {return;}
                             case RESIGN -> {return;}
                         }
