@@ -13,6 +13,7 @@ import websocket.messages.LoadGame;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Notification;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,18 +45,31 @@ public class GamePlay {
         connections.computeIfAbsent(command.getGameID(), id ->
             new ConcurrentHashMap<>()).put(ctx.sessionId(), new UserSession(authData.username(), ctx));
         ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
-        notify(sessions, gameData, ctx);
         String message = gson.toJson(new LoadGame(gameData.game()));
         ctx.send(message);
+        notify(sessions, gameData, ctx);
     }
 
     public void notify(ConcurrentHashMap<String, UserSession> sessions, GameData gameData, WsContext ctx) {
-        String whiteUsername = gameData.whiteUsername();
-        String blackUsername = gameData.blackUsername();
         String username = sessions.get(ctx.sessionId()).username();
-
-        sessions.values().forEach(values -> {
-
+        Notification notification;
+        if (username.equals(gameData.whiteUsername())) {
+            notification = new Notification(username + " is playing as white.");
+        } else if (username.equals(gameData.blackUsername())) {
+            notification = new Notification(username + " is playing as black.");
+        } else {
+            notification = new Notification(username + " is observing.");
+        }
+        sessions.values().forEach(session -> {
+            if (!session.ctx().session.isOpen()) {
+                sessions.remove(session.ctx().sessionId());
+                return;
+            }
+            try {
+                session.ctx().send(gson.toJson(notification));
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         });
     }
 

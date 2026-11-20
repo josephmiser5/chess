@@ -6,6 +6,7 @@ import client.ServerMessageObserver;
 import model.GameData;
 import websocket.messages.Error;
 import websocket.messages.LoadGame;
+import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
@@ -36,6 +37,10 @@ public class Repl implements ServerMessageObserver {
                 DrawBoard board = new DrawBoard(teamColor, game);
                 board.drawBoard();
                 printPrompt("[IN_GAME]");
+            }
+            case NOTIFICATION -> {
+                Notification notification = (Notification) message;
+                printSuccess(notification.getMessage());
             }
             case ERROR -> {
                 Error error = (Error) message;

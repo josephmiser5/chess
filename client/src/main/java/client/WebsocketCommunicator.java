@@ -4,6 +4,7 @@ import jakarta.websocket.*;
 import websocket.commands.UserGameCommand;
 import websocket.messages.Error;
 import websocket.messages.LoadGame;
+import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
 import java.net.URI;
@@ -34,6 +35,10 @@ public class WebsocketCommunicator extends Endpoint {
                     case LOAD_GAME -> {
                         LoadGame game = gson.fromJson(message, LoadGame.class);
                         client.notify(game);
+                    }
+                    case NOTIFICATION -> {
+                        Notification notification = gson.fromJson(message, Notification.class);
+                        client.notify(notification);
                     }
                     case ERROR -> {
                         Error error = gson.fromJson(message, Error.class);
