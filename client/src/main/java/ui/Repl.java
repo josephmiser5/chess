@@ -143,6 +143,9 @@ public class Repl implements ServerMessageObserver {
             case "move" -> {
                 gameHandler.move(gameID, tokens);
             }
+            case "leave" -> {
+                state = State.SIGNEDIN;
+            }
         }
     }
 

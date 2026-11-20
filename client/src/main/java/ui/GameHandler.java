@@ -34,6 +34,9 @@ public class GameHandler {
         }
         String[] start = tokens[1].split("");
         String[] end = tokens[2].split("");
+        if (start.length != 2 || end.length != 2) {
+            printError("Must enter row letter and column number for start and end positions. Example: move e1 e2");
+        }
         int startRow;
         int endRow;
         try {
@@ -43,10 +46,10 @@ public class GameHandler {
             printError("Row number must be entered after column letter. Example: move e1 e2");
             throw new Exception("Invalid column entry.");
         }
-        int startCol = start[0].charAt(0) - 'a';
-        int endCol = end[0].charAt(0) - 'a';
+        int startCol = start[0].charAt(0) - 'a' + 1;
+        int endCol = end[0].charAt(0) - 'a' + 1;
         if (startCol > 8 || startCol < 1 || endCol > 8 || endCol < 1) {
-            printError("Column letters must be a-h. Example: move a1 g1");
+            printError("Column letters must be a-h. Example: move a1 g1" + tokens[1] + tokens[2]);
             throw new Exception("Invalid row entry.");
         }
         return new ChessMove(new ChessPosition(startRow, startCol),

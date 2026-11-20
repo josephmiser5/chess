@@ -11,6 +11,7 @@ import java.util.Vector;
  * signature of the existing methods.
  */
 public class ChessGame {
+    public boolean gameOver = false;
     ChessBoard currentBoard = new ChessBoard();
     ChessGame.TeamColor turn = TeamColor.WHITE;
     public ChessGame() {
@@ -81,10 +82,10 @@ public class ChessGame {
             }
         }
         if (!isOk) {
-             throw new chess.InvalidMoveException();
+             throw new chess.InvalidMoveException("You cannot move there.");
          }
         if (!currentBoard.getPiece(move.startPosition).getTeamColor().equals(turn)) {
-            throw new chess.InvalidMoveException();
+            throw new chess.InvalidMoveException("Its " + turn.toString().toLowerCase() + "'s turn.");
         }
         applyMove(currentBoard, move);
         turn = (turn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
@@ -126,7 +127,9 @@ public class ChessGame {
         if (!currentBoard.board.isInCheck(teamColor)) {
             return false;
         }
-        return inCheckNext(teamColor);
+        boolean inCheckMate = inCheckNext(teamColor);
+        gameOver = inCheckMate;
+        return inCheckMate;
     }
 
     boolean inCheckNext(TeamColor teamColor) {
@@ -158,6 +161,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor) && inCheckNext(teamColor)) {
+            gameOver = true;
             return true;
         }
         return false;

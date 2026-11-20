@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -9,6 +10,7 @@ import io.javalin.websocket.WsContext;
 import model.AuthData;
 import model.GameData;
 import model.UserSession;
+import websocket.commands.MakeMove;
 import websocket.messages.LoadGame;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
@@ -33,7 +35,7 @@ public class GamePlay {
         connections.get(gameID).remove(ctx.sessionId());
    }
 
-    public void connect(UserGameCommand command, WsContext ctx) throws DataAccessException {
+    public void connect(UserGameCommand command, WsContext ctx) throws Exception {
         AuthData authData = authDAO.getAuth(command.getAuthToken());
         if (authData == null) {
             throw new UnauthorizedException();
@@ -45,8 +47,8 @@ public class GamePlay {
         connections.computeIfAbsent(command.getGameID(), id ->
             new ConcurrentHashMap<>()).put(ctx.sessionId(), new UserSession(authData.username(), ctx));
         ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
-        String message = gson.toJson(new LoadGame(gameData.game()));
         notify(sessions, gameData, ctx);
+        String message = gson.toJson(new LoadGame(gameData.game()));
         ctx.send(message);
     }
 
@@ -65,25 +67,27 @@ public class GamePlay {
                 sessions.remove(session.ctx().sessionId());
                 return;
             }
-            try {
-                session.ctx().send(gson.toJson(notification));
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
+            session.ctx().send(gson.toJson(notification));
         });
     }
 
-    public void move(UserGameCommand command, WsContext ctx) throws Exception {
-        AuthData authData = authDAO.getAuth(command.getAuthToken());
+    public void move(MakeMove move, WsContext ctx) throws Exception {
+        AuthData authData = authDAO.getAuth(move.getAuthToken());
         if (authData == null) {
             throw new UnauthorizedException();
         }
-        GameData gameData = gameDAO.getGame(command.getGameID());
+        GameData gameData = gameDAO.getGame(move.getGameID());
         if (gameData == null) {
             throw new BadRequestException();
         }
         if (!authData.username().equals(gameData.whiteUsername()) && !authData.username().equals(gameData.blackUsername())) {
             throw new Exception("You are not a player.");
+        }
+        if (gameData.whiteUsername() == null  || gameData.blackUsername() == null) {
+            throw new Exception("Waiting for more players to join.");
+        }
+        if (gameData.game().gameOver) {
+            throw new Exception("Game is over. ");
         }
         switch (gameData.game().getTeamTurn()) {
             case WHITE -> {
@@ -96,7 +100,10 @@ public class GamePlay {
                     throw new Exception("It's " + gameData.blackUsername() + "'s turn.");
                 }
             }
-            case null, default -> throw new Exception("Something went wrong, please try again.");
             }
+            gameData.game().makeMove(move.getMove());
+            gameDAO.updateGame(gameData);
+            String updatedGame = gson.toJson(new LoadGame(gameDAO.getGame(move.getGameID()).game()));
+            ctx.send(updatedGame);
         }
     }

@@ -16,6 +16,7 @@ import service.UserService;
 import service.exception.AlreadyTakenException;
 import service.exception.BadRequestException;
 import service.exception.UnauthorizedException;
+import websocket.commands.MakeMove;
 import websocket.commands.UserGameCommand;
 import websocket.messages.Error;
 import websocket.messages.LoadGame;
@@ -118,7 +119,8 @@ public class Server {
                                 return;
                             }
                             case MAKE_MOVE -> {
-                                gamePlay.move(command, ctx);
+                                MakeMove move = gson.fromJson(ctx.message(), MakeMove.class);
+                                gamePlay.move(move, ctx);
                                 return;
                             }
                             case LEAVE -> {return;}
