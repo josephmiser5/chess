@@ -35,19 +35,20 @@ public class Repl implements ServerMessageObserver {
             case LOAD_GAME -> {
                 LoadGame updatedGame = (LoadGame) message;
                 game = updatedGame.getGame();
+                System.out.println("\n");
                 DrawBoard board = new DrawBoard(teamColor, game);
                 board.drawBoard();
-                printPrompt("[IN_GAME]");
             }
             case NOTIFICATION -> {
                 Notification notification = (Notification) message;
-                printSuccess(notification.getMessage());
+                printSuccess("\n" + notification.getMessage());
             }
             case ERROR -> {
                 Error error = (Error) message;
-                printError(error.getMessage());
+                printError("\n" + error.getMessage());
             }
         }
+        printPrompt("[IN_GAME]");
     }
 
     private enum State {

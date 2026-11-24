@@ -3,11 +3,13 @@ package service;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import io.javalin.websocket.WsContext;
 import model.AuthData;
 import model.GameData;
 import model.UserSession;
+import org.jetbrains.annotations.NotNull;
 import websocket.commands.MakeMove;
 import websocket.messages.LoadGame;
 import service.exception.BadRequestException;
@@ -32,18 +34,27 @@ public class GamePlay {
         this.gameDAO = gameDAO;
     }
 
+    public void leave(UserGameCommand command, WsContext ctx) throws Exception {
+        AuthData authData = authDAO.getAuth(command.getAuthToken());
+        if (authData == null) {
+            throw new UnauthorizedException();
+        }
+        GameData gameData = gameDAO.getGame(command.getGameID());
+        if (gameData == null) {
+            throw new BadRequestException();
+        }
+        ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
+        if (sessions == null) {throw new Exception("No one is connected to game.");}
+        connections.get(command.getGameID()).remove(ctx.sessionId());
 
-    public enum NotificationType {
-        CONNECT,
-        MOVE,
-        LEAVE,
-        RESIGN,
-        CHECKMATE,
+        if (authData.username().equals(gameData.whiteUsername())) {
+            gameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
+        } else if (authData.username().equals(gameData.blackUsername())) {
+            gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+        }
+        gameDAO.updateGame(gameData);
+        sendToOthers(sessions, new Notification(authData.username() + " left the game."), ctx);
     }
-
-   public void removeConnection(int gameID, WsContext ctx) {
-        connections.get(gameID).remove(ctx.sessionId());
-   }
 
     public void connect(UserGameCommand command, WsContext ctx) throws Exception {
         AuthData authData = authDAO.getAuth(command.getAuthToken());
@@ -87,12 +98,13 @@ public class GamePlay {
     }
 
     private void sendToAll(ConcurrentHashMap<String, UserSession> sessions, ServerMessage message) {
+        String notification = gson.toJson(message);
         sessions.values().forEach(session -> {
             if (!session.ctx().session.isOpen()) {
                 sessions.remove(session.ctx().sessionId());
                 return;
             }
-            session.ctx().send(gson.toJson(message));
+            session.ctx().send(notification);
         });
     }
 
@@ -127,38 +139,54 @@ public class GamePlay {
             }
             }
 
-            gameData.game().makeMove(move.getMove());
+        gameData.game().makeMove(move.getMove());
 
-            ConcurrentHashMap<String, UserSession> sessions = connections.get(move.getGameID());
+        ConcurrentHashMap<String, UserSession> sessions = connections.get(move.getGameID());
 
-            ChessGame.TeamColor teamColor = gameData.game().getTeamTurn();
-            String white = gameData.whiteUsername();
-            String black = gameData.blackUsername();
+        ChessGame.TeamColor teamColor = gameData.game().getTeamTurn();
+        String white = gameData.whiteUsername();
+        String black = gameData.blackUsername();
 
-            if (gameData.game().isInCheckmate(teamColor)) {
-                if (teamColor.equals(ChessGame.TeamColor.WHITE)) {
-                    sendToAll(sessions, new Notification(white + "is in checkmate. Game Over."));
-                } else {
-                    sendToAll(sessions, new Notification(black + "is in checkmate. Game Over."));
-                }
-                gameData.game().gameOver = true;
+        Notification inMortalDanger = null;
+
+        if (gameData.game().isInCheckmate(teamColor)) {
+            if (teamColor.equals(ChessGame.TeamColor.WHITE)) {
+                inMortalDanger = new Notification(white + " is in checkmate. Game Over.");
+            } else {
+                inMortalDanger = new Notification(black + " is in checkmate. Game Over.");
             }
-
-            if (gameData.game().isInCheck(teamColor)) {
-                sendToAll(sessions, new Notification(authData.username() + " is in check."));
+            gameData.game().gameOver = true;
+        } else if (gameData.game().isInStalemate(teamColor)) {
+            inMortalDanger =  new Notification("Stalemate! Game Over.");
+            gameData.game().gameOver = true;
+        } else if (gameData.game().isInCheck(teamColor)) {
+            if (teamColor.equals(ChessGame.TeamColor.WHITE)) {
+                inMortalDanger = new Notification(white + " is in check.");
+            } else {
+                inMortalDanger = new Notification(black + " is in check.");
             }
+        }
 
+        gameDAO.updateGame(gameData);
 
-            if (sessions == null) {throw new Exception("No one is connected to game");}
-            String username = authData.username();
-            char startCol = (char) (move.getMove().getStartPosition().getColumn() + 'a' - 1);
-            char endCol = (char) (move.getMove().getEndPosition().getColumn() + 'a' - 1);
-            int startRow = move.getMove().getStartPosition().getRow();
-            int endRow = move.getMove().getEndPosition().getRow();
-            Notification notification = new Notification(username + " made move: " + startCol + startRow + " " + endCol + endRow);
+        if (sessions == null) {throw new Exception("No one is connected to game");}
+        Notification notification = getNotification(move, authData);
 
-            gameDAO.updateGame(gameData);
-            sendToOthers(sessions, notification, ctx);
-            sendToAll(sessions, new LoadGame(gameData.game()));
+        sendToAll(sessions, new LoadGame(gameData.game()));
+        sendToOthers(sessions, notification, ctx);
+
+        if (inMortalDanger != null) {
+            sendToAll(sessions, inMortalDanger);
         }
     }
+
+    @NotNull
+    private static Notification getNotification(MakeMove move, AuthData authData) throws Exception {
+        String username = authData.username();
+        char startCol = (char) (move.getMove().getStartPosition().getColumn() + 'a' - 1);
+        char endCol = (char) (move.getMove().getEndPosition().getColumn() + 'a' - 1);
+        int startRow = move.getMove().getStartPosition().getRow();
+        int endRow = move.getMove().getEndPosition().getRow();
+        return new Notification(username + " made move: " + startCol + startRow + " " + endCol + endRow);
+    }
+}

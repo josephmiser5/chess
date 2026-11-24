@@ -78,4 +78,8 @@ public class ServerFacade {
     public void move(int gameID, ChessMove move) throws Exception {
         ws.send(new MakeMove(authToken, gameID, move));
     }
+
+    public void leave(int gameID) throws Exception {
+        ws.send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+    }
 }

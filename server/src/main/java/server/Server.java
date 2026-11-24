@@ -123,7 +123,9 @@ public class Server {
                                 gamePlay.move(move, ctx);
                                 return;
                             }
-                            case LEAVE -> {return;}
+                            case LEAVE -> {
+                                gamePlay.leave(command, ctx);
+                            }
                             case RESIGN -> {return;}
                         }
                     } catch (UnauthorizedException | BadRequestException e) {

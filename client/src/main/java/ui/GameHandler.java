@@ -27,6 +27,9 @@ public class GameHandler {
         }
     }
 
+    public void leave() {
+    }
+
     private ChessMove parse(String[] tokens) throws Exception {
         if (tokens.length != 3) {
             printError("Please enter a starting and ending square. Example: move e1 e2");
