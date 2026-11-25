@@ -34,6 +34,12 @@ public class GamePlay {
         this.gameDAO = gameDAO;
     }
 
+    public void onClose(WsContext ctx) {
+        connections.values().forEach(game -> {
+            game.remove(ctx.sessionId());
+        });
+    }
+
     public void leave(UserGameCommand command, WsContext ctx) throws Exception {
         AuthData authData = authDAO.getAuth(command.getAuthToken());
         if (authData == null) {
@@ -44,15 +50,20 @@ public class GamePlay {
             throw new BadRequestException();
         }
         ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
-        if (sessions == null) {throw new Exception("No one is connected to game.");}
-        connections.get(command.getGameID()).remove(ctx.sessionId());
 
         if (authData.username().equals(gameData.whiteUsername())) {
             gameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
-        } else if (authData.username().equals(gameData.blackUsername())) {
-            gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+            gameDAO.updateGame(gameData);
         }
-        gameDAO.updateGame(gameData);
+        if (authData.username().equals(gameData.blackUsername())) {
+            gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+            gameDAO.updateGame(gameData);
+        }
+
+
+        if (sessions == null) {return;}
+        sessions.remove(ctx.sessionId());
+
         sendToOthers(sessions, new Notification(authData.username() + " left the game."), ctx);
     }
 

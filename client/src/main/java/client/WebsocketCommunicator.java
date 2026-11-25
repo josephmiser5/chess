@@ -7,6 +7,7 @@ import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Scanner;
 
@@ -24,6 +25,13 @@ public class WebsocketCommunicator extends Endpoint {
 
     public void send(UserGameCommand command) throws Exception {
         this.session.getBasicRemote().sendText(gson.toJson(command));
+    }
+
+    public void close() throws IOException {
+        if (!session.isOpen()) {
+            return;
+        }
+        session.close();
     }
 
     @Override

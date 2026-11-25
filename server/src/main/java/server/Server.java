@@ -140,6 +140,7 @@ public class Server {
                 ctx.send("Websocket response: " + ctx.message());
                     });
             ws.onClose(ctx -> {
+                gamePlay.onClose(ctx);
                 System.out.println("Websocket closed");
             });
         });

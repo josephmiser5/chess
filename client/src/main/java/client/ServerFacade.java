@@ -8,6 +8,7 @@ import result.*;
 import websocket.commands.MakeMove;
 import websocket.commands.UserGameCommand;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ServerFacade {
@@ -80,6 +81,18 @@ public class ServerFacade {
     }
 
     public void leave(int gameID) throws Exception {
-        ws.send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+        if (ws == null) {
+            return;
+        }
+        try {
+            ws.send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+        } finally {
+            try {
+                ws.close();
+            } catch (Exception e) {
+
+            }
+            ws = null;
+        }
     }
 }

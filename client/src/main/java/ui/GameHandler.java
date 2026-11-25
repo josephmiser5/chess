@@ -27,7 +27,12 @@ public class GameHandler {
         }
     }
 
-    public void leave() {
+    public void leave(int gameID) {
+        try {
+            facade.leave(gameID);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ChessMove parse(String[] tokens) throws Exception {
@@ -52,7 +57,7 @@ public class GameHandler {
         int startCol = start[0].charAt(0) - 'a' + 1;
         int endCol = end[0].charAt(0) - 'a' + 1;
         if (startCol > 8 || startCol < 1 || endCol > 8 || endCol < 1) {
-            printError("Column letters must be a-h. Example: move a1 g1" + tokens[1] + tokens[2]);
+            printError("Column letters must be a-h. Example: move a1 g1");
             throw new Exception("Invalid row entry.");
         }
         return new ChessMove(new ChessPosition(startRow, startCol),
