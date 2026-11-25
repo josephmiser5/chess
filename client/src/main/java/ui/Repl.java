@@ -144,6 +144,14 @@ public class Repl implements ServerMessageObserver {
             case "move" -> {
                 gameHandler.move(gameID, tokens);
             }
+            case "resign" -> {
+                printSuccess("Are you sure you want to resign. y/n");
+                String[] response = input.nextLine().trim().split("\\s+");
+                String confirmation = response[0].toLowerCase();
+                if (confirmation.equals("y")) {
+                    gameHandler.resign(gameID);
+                }
+            }
             case "leave" -> {
                 gameHandler.leave(gameID);
                 gameID = -1;

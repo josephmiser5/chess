@@ -89,10 +89,12 @@ public class ServerFacade {
         } finally {
             try {
                 ws.close();
-            } catch (Exception e) {
-
-            }
+            } catch (Exception e) {}
             ws = null;
         }
+    }
+
+    public void resign(int gameID) throws Exception {
+        ws.send(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
     }
 }

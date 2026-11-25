@@ -67,6 +67,35 @@ public class GamePlay {
         sendToOthers(sessions, new Notification(authData.username() + " left the game."), ctx);
     }
 
+
+    public void resign(UserGameCommand command) throws Exception {
+        AuthData authData = authDAO.getAuth(command.getAuthToken());
+        if (authData == null) {
+            throw new UnauthorizedException();
+        }
+        GameData gameData = gameDAO.getGame(command.getGameID());
+        if (gameData == null) {
+            throw new BadRequestException();
+        }
+        if (gameData.game().gameOver) {
+            throw new Exception("Game is already over.");
+        }
+        ConcurrentHashMap<String, UserSession> sessions = connections.get(command.getGameID());
+        if (sessions == null) {return;}
+
+        if (authData.username().equals(gameData.whiteUsername())) {
+            gameData.game().gameOver = true;
+            gameDAO.updateGame(gameData);
+            sendToAll(sessions, new Notification(authData.username() + " resigned." + " Black wins!"));
+        } else if (authData.username().equals(gameData.blackUsername())) {
+            gameData.game().gameOver = true;
+            gameDAO.updateGame(gameData);
+            sendToAll(sessions, new Notification(authData.username() + " resigned." + " White wins!"));
+        } else {
+            throw new Exception("You are not a player.");
+        }
+    }
+
     public void connect(UserGameCommand command, WsContext ctx) throws Exception {
         AuthData authData = authDAO.getAuth(command.getAuthToken());
         if (authData == null) {

@@ -126,7 +126,9 @@ public class Server {
                             case LEAVE -> {
                                 gamePlay.leave(command, ctx);
                             }
-                            case RESIGN -> {return;}
+                            case RESIGN -> {
+                                gamePlay.resign(command);
+                            }
                         }
                     } catch (UnauthorizedException | BadRequestException e) {
                         ServerMessage message = new Error(e.getMessage());
