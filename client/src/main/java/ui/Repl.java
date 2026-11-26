@@ -45,7 +45,7 @@ public class Repl implements ServerMessageObserver {
             }
             case ERROR -> {
                 Error error = (Error) message;
-                printError("\n" + error.getMessage());
+                printError("\n" + error.getErrorMessage());
             }
         }
         printPrompt("[IN_GAME]");

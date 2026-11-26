@@ -125,21 +125,18 @@ public class Server {
                             }
                             case LEAVE -> {
                                 gamePlay.leave(command, ctx);
+                                return;
                             }
                             case RESIGN -> {
                                 gamePlay.resign(command);
+                                return;
                             }
                         }
-                    } catch (UnauthorizedException | BadRequestException e) {
-                        ServerMessage message = new Error(e.getMessage());
-                        ctx.send(gson.toJson(message));
-                        return;
                     } catch (Exception e) {
                         e.printStackTrace();
                         ServerMessage message = new Error(e.getMessage());
                         ctx.send(gson.toJson(message));
                     }
-                ctx.send("Websocket response: " + ctx.message());
                     });
             ws.onClose(ctx -> {
                 gamePlay.onClose(ctx);
