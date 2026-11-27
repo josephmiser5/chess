@@ -1,8 +1,13 @@
 package ui;
 
+import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import client.ServerFacade;
+
+import java.util.HashSet;
+
 import static ui.PrintStyles.*;
 
 public class GameHandler {
@@ -70,5 +75,29 @@ public class GameHandler {
         }
         return new ChessMove(new ChessPosition(startRow, startCol),
                 new ChessPosition(endRow, endCol), null);
+    }
+
+    public void highlightMoves(String[] tokens, ChessGame game) {
+        if (tokens.length != 2) {
+            printError("Please enter a starting and ending square. Example: move e1 e2");
+            return;
+        }
+        String[] position = tokens[1].split("");
+        if (position.length != 2) {
+            printError("Must enter row letter and column number for piece. Example: highlight e2");
+        }
+        int row;
+        try {
+            row = Integer.parseInt(position[1]);
+        } catch (NumberFormatException e) {
+            printError("Row number must be entered after column letter. Example: highlight e2");
+            return;
+        }
+        int col = position[0].charAt(0) - 'a' + 1;
+        ChessPiece piece = game.getBoard().getPiece(new ChessPosition(row, col));
+        ChessPosition chessPosition = new ChessPosition(row, col);
+        HashSet<ChessMove> moveHashSet = new HashSet<>(game.validMoves(chessPosition));
+        DrawBoard drawBoard = new DrawBoard(piece.getTeamColor(), game, chessPosition, moveHashSet);
+        drawBoard.drawBoard();
     }
 }

@@ -1,7 +1,10 @@
 package ui;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
+
+import java.util.HashSet;
 
 import static ui.EscapeSequences.*;
 
@@ -9,10 +12,19 @@ public class DrawBoard {
 
     ChessGame game;
     ChessGame.TeamColor team;
+    HashSet<ChessMove> moveHashSet = new HashSet<>();
+    ChessPosition position;
 
     public DrawBoard(ChessGame.TeamColor team, ChessGame game) {
         this.team = team;
         this.game = game;
+    }
+
+    public DrawBoard(ChessGame.TeamColor team, ChessGame game, ChessPosition position, HashSet<ChessMove> moveHashSet) {
+        this.team = team;
+        this.game = game;
+        this.moveHashSet = moveHashSet;
+        this.position = position;
     }
 
     private static String pieceColor(ChessPiece piece) {
@@ -50,12 +62,16 @@ public class DrawBoard {
         return strPiece;
         }
 
-    private boolean putPiece(ChessPosition position, boolean squareColor) {
+    private boolean putPiece(ChessPosition position, boolean squareColor, boolean highlight) {
         ChessPiece piece = game.getBoard().getPiece(position);
         if (piece == null) {
             return false;
         }
-        System.out.print(squareColor ? SET_BG_COLOR_BEIGE : SET_BG_COLOR_DARK_GREY);
+        if (highlight) {
+            System.out.print(squareColor ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_DARK_GREEN);
+        } else {
+            System.out.print(squareColor ? SET_BG_COLOR_BEIGE : SET_BG_COLOR_DARK_GREY);
+        }
         System.out.print(pieceColor(piece));
         System.out.print(whichPiece(piece));
         System.out.print(RESET_TEXT_COLOR);
@@ -106,13 +122,26 @@ public class DrawBoard {
                 }
                 boolean light = (row + col) % 2 == 0;
                 boolean placed;
+                boolean highlight = false;
                 switch (team) {
-                    case WHITE -> placed = putPiece(new ChessPosition(9 - row, col), light);
-                    case BLACK -> placed = putPiece(new ChessPosition(row, 9 - col), light);
+                    case WHITE -> {
+                        ChessPosition endPosition = new ChessPosition(9 - row, col);
+                        highlight = moveHashSet.contains(new ChessMove(position, endPosition, null));
+                        placed = putPiece(endPosition, light, highlight);
+                    }
+                    case BLACK -> {
+                        ChessPosition endPosition = new ChessPosition(row, 9 - col);
+                        highlight = moveHashSet.contains(new ChessMove(position, endPosition, null));
+                        placed = putPiece(endPosition, light, highlight);
+                    }
                     case null, default -> placed = false;
                 }
                 if (placed) {continue;}
-                System.out.print(light ? SET_BG_COLOR_BEIGE : SET_BG_COLOR_DARK_GREY);
+                if (highlight) {
+                    System.out.print(light ? SET_BG_COLOR_YELLOW : SET_BG_COLOR_DARK_GREEN);
+                } else {
+                    System.out.print(light ? SET_BG_COLOR_BEIGE : SET_BG_COLOR_DARK_GREY);
+                }
                 System.out.print(EMPTY);
             }
             System.out.print(RESET_BG_COLOR);

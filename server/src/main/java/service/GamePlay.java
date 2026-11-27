@@ -220,6 +220,7 @@ public class GamePlay {
         }
     }
 
+
     @NotNull
     private static Notification getNotification(MakeMove move, AuthData authData) throws Exception {
         String username = authData.username();
